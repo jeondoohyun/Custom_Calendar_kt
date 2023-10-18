@@ -7,15 +7,20 @@ import android.view.MotionEvent
 import android.view.View.OnTouchListener
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import com.jdh.calendar_kt.databinding.ActivityMainBinding
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
 class MainActivity : AppCompatActivity() {
 
     private var mBinding: ActivityMainBinding? = null
     private val binding get() = mBinding!!
+    lateinit var selectedDate: LocalDate
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -30,6 +35,9 @@ class MainActivity : AppCompatActivity() {
             0,
             navigationHeight()
         )
+
+        selectedDate  = LocalDate.now()
+        setMonthView()
 
         var touchPoint = 0f
         binding.activityCustomCalendar.setOnTouchListener(OnTouchListener { v, event ->
@@ -49,10 +57,12 @@ class MainActivity : AppCompatActivity() {
                     }
                     if (touchPoint > 0) {
                         // 손가락을 우->좌로 움직였을때 오른쪽 화면 생성
-                        Toast.makeText(this, "우",Toast.LENGTH_SHORT).show()
+                        selectedDate = selectedDate.plusMonths(1)
+                        setMonthView()
                     } else {
                         // 손가락을 좌->우로 움직였을때 왼쪽 화면 생성
-                        Toast.makeText(this, "좌",Toast.LENGTH_SHORT).show()
+                        selectedDate = selectedDate.minusMonths(1)
+                        setMonthView()
                     }
 
                     // 손가락을 왼쪽으로 움직였으면 오른쪽 화면이 나타나야 한다.
@@ -92,6 +102,23 @@ class MainActivity : AppCompatActivity() {
 
         return if (resourceId > 0) resources.getDimensionPixelSize(resourceId)
         else 0
+    }
+
+    //날짜 화면에 보여주기
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun setMonthView() {
+        //년월 텍스트뷰 셋팅
+        binding.monthYearText.text = monthYearFromDate(selectedDate)
+    }
+
+    //날짜 타입 설정
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun monthYearFromDate(date: LocalDate): String{
+
+        var formatter = DateTimeFormatter.ofPattern("M월 yyyy")
+
+        // 받아온 날짜를 해당 포맷으로 변경
+        return date.format(formatter)
     }
 
 

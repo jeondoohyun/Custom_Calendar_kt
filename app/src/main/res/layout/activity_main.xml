@@ -50,7 +50,7 @@
             android:layout_weight="1"
             android:text="일"
             android:textStyle="bold"
-            android:textSize="15dp"
+            android:textSize="13dp"
             android:textAlignment="center"
             android:textColor="@android:color/holo_red_dark"/>
 
@@ -60,7 +60,7 @@
             android:layout_weight="1"
             android:text="월"
             android:textStyle="bold"
-            android:textSize="15dp"
+            android:textSize="13dp"
             android:textAlignment="center"
             android:textColor="@android:color/black"/>
 
@@ -70,7 +70,7 @@
             android:layout_weight="1"
             android:text="화"
             android:textStyle="bold"
-            android:textSize="15dp"
+            android:textSize="13dp"
             android:textAlignment="center"
             android:textColor="@android:color/black"/>
 
@@ -80,7 +80,7 @@
             android:layout_weight="1"
             android:text="수"
             android:textStyle="bold"
-            android:textSize="15dp"
+            android:textSize="13dp"
             android:textAlignment="center"
             android:textColor="@android:color/black"/>
 
@@ -90,7 +90,7 @@
             android:layout_weight="1"
             android:text="목"
             android:textStyle="bold"
-            android:textSize="15dp"
+            android:textSize="13dp"
             android:textAlignment="center"
             android:textColor="@android:color/black"/>
 
@@ -100,7 +100,7 @@
             android:layout_weight="1"
             android:text="금"
             android:textStyle="bold"
-            android:textSize="15dp"
+            android:textSize="13dp"
             android:textAlignment="center"
             android:textColor="@android:color/black"/>
 
@@ -110,7 +110,7 @@
             android:layout_weight="1"
             android:text="토"
             android:textStyle="bold"
-            android:textSize="15dp"
+            android:textSize="13dp"
             android:textAlignment="center"
             android:textColor="@android:color/holo_blue_dark"/>
     </LinearLayout>
