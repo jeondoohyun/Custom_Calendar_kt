@@ -4,7 +4,9 @@ import android.R
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.DragEvent
 import android.view.MotionEvent
+import android.view.View
 import android.view.View.OnTouchListener
 import android.view.WindowManager
 import android.widget.Toast
@@ -17,9 +19,10 @@ import com.jdh.calendar_kt.databinding.ActivityMainBinding
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnItemListener {
 
     private var mBinding: ActivityMainBinding? = null
     private val binding get() = mBinding!!
@@ -40,22 +43,33 @@ class MainActivity : AppCompatActivity() {
             navigationHeight()
         )
 
-        selectedDate  = LocalDate.now()
+
+        selectedDate = LocalDate.now()
         setMonthView()
 
+
+        // todo : // recyclerview 어댑터의 클릭이벤트와 함께 쓸때 Action_down모션 이벤트가 씹힘, 위 아래로 드래그 하면 모션 캔슬 나면서 모션 up이 작동을 못함
+        // 액션다운이 반응을 안함
+        // 이거쓰면 왼쪽으로밖에 안감
         var touchPoint = 0f
         binding.recyclerView.setOnTouchListener(OnTouchListener { v, event ->
 //            val transaction: FragmentTransaction =
 //                getActivity().getSupportFragmentManager().beginTransaction()
 //            val ff: Fragment
+            Log.e("드래그 다운","${event.action}")
             when (event.action) {
-                MotionEvent.ACTION_DOWN ->                 // 화면을 처음 터치한 x좌표값 저장
+                MotionEvent.ACTION_DOWN -> {     // 화면을 처음 터치한 x좌표값 저장
                     touchPoint = event.x
+//                    Log.e("드래그 다운","${touchPoint}")
+                }
+
 
                 MotionEvent.ACTION_UP -> {
                     // 손가락이 화면에서 떨어졌을때 x좌표와의 거리 비교
                     // 해당 거리가 100이 되지 않으면 리턴.
-                    touchPoint = touchPoint - event.x
+                    var xx = event.x
+                    touchPoint = touchPoint - xx
+//                    Log.e("드래그 업","${xx}, ${Math.abs(touchPoint)}")
                     if (Math.abs(touchPoint) < 100) {
                         return@OnTouchListener false
                     }
@@ -120,7 +134,7 @@ class MainActivity : AppCompatActivity() {
         val dayList = dayInMonthArray(selectedDate)
 
         //어댑터 초기화
-        val adapter = CalendarAdapter(dayList)
+        val adapter = CalendarAdapter(dayList, this)
 
         //레이아웃 설정(열 7개)
         var manager: RecyclerView.LayoutManager = GridLayoutManager(applicationContext, 7)
@@ -160,7 +174,7 @@ class MainActivity : AppCompatActivity() {
         var dayOfWeek = firstDay.dayOfWeek.value
 
         var idx = 0
-        if (dayOfWeek == 7) idx = 8 // 1일이 일요일일때 첫칸부터 채우도록 idx 8 설정
+        if (dayOfWeek == 7) idx = 8 // 첫시작날이 일요일일때 첫칸부터 채우도록 idx 8 설정
         else idx = 1
         for(i in idx..41){
             if(i <= dayOfWeek || i > (lastDay + dayOfWeek)){
@@ -169,9 +183,141 @@ class MainActivity : AppCompatActivity() {
                 dayList.add((i - dayOfWeek).toString())
             }
         }
-
-
         return dayList
+    }
+
+    override fun onItemClick(dayText: String) {
+        Toast.makeText(this, dayText, Toast.LENGTH_SHORT).show()
+    }
+
+    var touchPoint = 0f
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onTouchEvent(view: View, event: MotionEvent, dayText: String): Boolean {
+//        var touchPoint = 0f
+        Log.e("드래그","${event.action}")
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {     // 화면을 처음 터치한 x좌표값 저장
+                touchPoint = event.x
+//                Log.e("드래그 다운","${touchPoint}")
+                true
+            }
+
+//            MotionEvent.ACTION_MOVE -> {
+//                // 드래그된 위치로 view 위치 변경
+//                var newX = event.rawX + widgetDX
+//                newX = max(0F, newX)
+//                newX = min(xMax.toFloat(), newX)
+//                v.x = newX
+//
+//                var newY = event.rawY + widgetDY
+//                newY = max(0F, newY)
+//                newY = min(yMax.toFloat(), newY)
+//                v.y = newY
+//
+//                true
+//            }
+
+//            MotionEvent. -> {
+//                var xx = event.x
+//                Log.e("드래그 캔슬","${xx}, ${Math.abs(touchPoint)}")
+//            }
+
+            MotionEvent.ACTION_UP -> {
+                // 손가락이 화면에서 떨어졌을때 x좌표와의 거리 비교
+                // 해당 거리가 100이 되지 않으면 리턴.
+                var xx = event.x
+//                Log.e("드래그 업","${xx}, ${Math.abs(touchPoint)}")
+                touchPoint = touchPoint - xx
+//                Log.e("드래그 업","${xx}, ${Math.abs(touchPoint)}")
+//                if (Math.abs(touchPoint) < 100) {
+//                    return false
+//                }
+                if (Math.abs(touchPoint) <= 16 ) {
+                    runOnUiThread {
+                        Toast.makeText(this, dayText, Toast.LENGTH_SHORT).show()
+                    }
+                } else if (touchPoint > 0) {
+                    // 손가락을 우->좌로 움직였을때 오른쪽 화면 생성
+                    Toast.makeText(this, "우",Toast.LENGTH_SHORT).show()
+                    selectedDate = selectedDate.plusMonths(1)
+                    runOnUiThread {
+                        setMonthView()
+                    }
+                } else {
+                    // 손가락을 좌->우로 움직였을때 왼쪽 화면 생성
+                    Toast.makeText(this, "좌",Toast.LENGTH_SHORT).show()
+                    selectedDate = selectedDate.minusMonths(1)
+                    runOnUiThread {
+                        setMonthView()
+                    }
+                }
+            }
+        }
+        return true
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onDrag(view: View, event: DragEvent, dayText: String): Boolean {
+//        var touchPoint = 0f
+        Log.e("드래그","${event.action}")
+        when (event.action) {
+            DragEvent.ACTION_DRAG_STARTED -> {     // 화면을 처음 터치한 x좌표값 저장
+                touchPoint = event.x
+//                Log.e("드래그 다운","${touchPoint}")
+            }
+
+//            MotionEvent.ACTION_MOVE -> {
+//                // 드래그된 위치로 view 위치 변경
+//                var newX = event.rawX + widgetDX
+//                newX = max(0F, newX)
+//                newX = min(xMax.toFloat(), newX)
+//                v.x = newX
+//
+//                var newY = event.rawY + widgetDY
+//                newY = max(0F, newY)
+//                newY = min(yMax.toFloat(), newY)
+//                v.y = newY
+//
+//                true
+//            }
+
+//            MotionEvent. -> {
+//                var xx = event.x
+//                Log.e("드래그 캔슬","${xx}, ${Math.abs(touchPoint)}")
+//            }
+
+            DragEvent.ACTION_DROP -> {
+                // 손가락이 화면에서 떨어졌을때 x좌표와의 거리 비교
+                // 해당 거리가 100이 되지 않으면 리턴.
+                var xx = event.x
+//                Log.e("드래그 업","${xx}, ${Math.abs(touchPoint)}")
+                touchPoint = touchPoint - xx
+//                Log.e("드래그 업","${xx}, ${Math.abs(touchPoint)}")
+//                if (Math.abs(touchPoint) < 100) {
+//                    return false
+//                }
+                if (Math.abs(touchPoint) <= 16 ) {
+                    runOnUiThread {
+                        Toast.makeText(this, dayText, Toast.LENGTH_SHORT).show()
+                    }
+                } else if (touchPoint > 0) {
+                    // 손가락을 우->좌로 움직였을때 오른쪽 화면 생성
+                    Toast.makeText(this, "우",Toast.LENGTH_SHORT).show()
+                    selectedDate = selectedDate.plusMonths(1)
+                    runOnUiThread {
+                        setMonthView()
+                    }
+                } else {
+                    // 손가락을 좌->우로 움직였을때 왼쪽 화면 생성
+                    Toast.makeText(this, "좌",Toast.LENGTH_SHORT).show()
+                    selectedDate = selectedDate.minusMonths(1)
+                    runOnUiThread {
+                        setMonthView()
+                    }
+                }
+            }
+        }
+        return true
     }
 
 }

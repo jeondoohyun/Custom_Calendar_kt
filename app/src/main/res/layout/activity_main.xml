@@ -115,9 +115,11 @@
             android:textColor="@android:color/holo_blue_dark"/>
     </LinearLayout>
 
+    <!-- 스크롤 중지 overScrollMode="never" -->
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/recyclerView"/>
+        android:id="@+id/recyclerView"
+        android:overScrollMode="never"/>
 
 </LinearLayout>

@@ -4,8 +4,7 @@
     android:layout_height="50dp"
     android:orientation="vertical"
     android:padding="8dp"
-    android:background="#00FFFFFF"
-    >
+    android:background="#00FFFFFF">
 
     <TextView
         android:id="@+id/dayText"
