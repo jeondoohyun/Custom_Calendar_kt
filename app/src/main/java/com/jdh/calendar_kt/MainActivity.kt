@@ -3,6 +3,7 @@ package com.jdh.calendar_kt
 import android.R
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View.OnTouchListener
 import android.view.WindowManager
@@ -158,14 +159,17 @@ class MainActivity : AppCompatActivity() {
         //첫 번째날 요일 가져오기(월:1, 일: 7)
         var dayOfWeek = firstDay.dayOfWeek.value
 
-        // todo : 23년 10월 1일이 첫줄 띄고 생성되어 있다. 여기서 설정 해야 할듯
-        for(i in 1..41){
+        var idx = 0
+        if (dayOfWeek == 7) idx = 8 // 1일이 일요일일때 첫칸부터 채우도록 idx 8 설정
+        else idx = 1
+        for(i in idx..41){
             if(i <= dayOfWeek || i > (lastDay + dayOfWeek)){
                 dayList.add("")
-            }else{
+            }else{  // 날짜 추가
                 dayList.add((i - dayOfWeek).toString())
             }
         }
+
 
         return dayList
     }

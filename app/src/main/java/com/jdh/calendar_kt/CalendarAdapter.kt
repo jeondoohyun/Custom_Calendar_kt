@@ -1,12 +1,12 @@
 package com.jdh.calendar_kt
 
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
+import android.graphics.Color
+import android.view.*
+import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 
-class CalendarAdapter(private val dayList: ArrayList<String>):
+class CalendarAdapter(private val dayList: ArrayList<String>,
+                      private val onItemListener: OnItemListener):
     RecyclerView.Adapter<CalendarAdapter.ItemViewHolder>() {
 
 
@@ -26,7 +26,24 @@ class CalendarAdapter(private val dayList: ArrayList<String>):
     //데이터 설정
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
 
-        holder.dayText.text = dayList[holder.adapterPosition]
+        var day = dayList[holder.adapterPosition]
+
+        // todo
+        holder.dayText.text = day
+
+        //텍스트 색상 지정(토,일)
+        if((position +1) % 7 == 0){ //토요일은 파랑
+            holder.dayText.setTextColor(Color.BLUE)
+
+        }else if( position == 0 || position % 7 == 0){ //일요일은 빨강
+            holder.dayText.setTextColor(Color.RED)
+        }
+
+        //날짜 클릭 이벤트
+        holder.itemView.setOnClickListener {
+            //인터페이스를 통해 날짜를 넘겨준다.
+            onItemListener.onItemClick(day)
+        }
     }
 
     override fun getItemCount(): Int {
