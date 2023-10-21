@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.WindowManager
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -23,6 +24,7 @@ import java.time.format.DateTimeFormatter
 class MainActivity : AppCompatActivity(), OnItemListener {
     companion object {
         var recyclerView_height = 0
+        lateinit var container: LinearLayout
     }
 
     private var mBinding: ActivityMainBinding? = null
@@ -44,17 +46,37 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             navigationHeight()
         )
 
+        container = LinearLayout(this)
+
         binding.containerHeight.getViewTreeObserver()
             .addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     val height: Int = binding.containerHeight.getHeight()
                     recyclerView_height = height
-                    Log.e("높이_1", "${recyclerView_height}")
                     binding.containerHeight.getViewTreeObserver().removeOnGlobalLayoutListener(this)
                     setMonthView()
                 }
             })
 
+        binding.preBtn.setOnClickListener {
+            CalendarUtil.selectedDate = CalendarUtil.selectedDate.minusMonths(1)
+            runOnUiThread {
+                setMonthView()
+            }
+        }
+
+        binding.nextBtn.setOnClickListener {
+            CalendarUtil.selectedDate = CalendarUtil.selectedDate.plusMonths(1)
+            runOnUiThread {
+                setMonthView()
+            }
+        }
+
+        // containerHeight에 리스너 추가 하면 동작 안함. containerHeight가 recyclerview 아래에 있어서 그런가?
+
+//        binding.containerHeight.setOnClickListener {
+//            Log.e("클릭_con","진입")
+//        }
 
 //        recyclerView_height = binding.recyclerView.height
 //        recyclerView_height = binding.containerHeight.height
@@ -155,7 +177,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         val dayList = dayInMonthArray(CalendarUtil.selectedDate)
 
         //어댑터 초기화
-        val adapter = CalendarAdapter(dayList, this)
+        val adapter = CalendarAdapter(dayList, this, binding.recyclerView)
 
         //레이아웃 설정(열 7개)
         var manager: RecyclerView.LayoutManager = GridLayoutManager(applicationContext, 7)
@@ -165,8 +187,8 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
         //어댑터 적용
         binding.recyclerView.adapter = adapter
-        recyclerView_height = binding.recyclerView.height
-        Log.e("높이_2", "${recyclerView_height}")
+//        recyclerView_height = binding.recyclerView.height
+//        Log.e("높이_2", "${recyclerView_height}")
     }
 
     //날짜 타입 설정
@@ -227,13 +249,18 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
     var touchPoint = 0f
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onTouchEvent(view: View, event: MotionEvent, dayText: LocalDate?): Boolean {
+    override fun onTouchEvent(view: View, event: MotionEvent): Boolean {
 //        var touchPoint = 0f
+
+        //0 down
+        //1 up
+        //2 move
+        //3 cancel
         Log.e("드래그","${event.action}")
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {     // 화면을 처음 터치한 x좌표값 저장
                 touchPoint = event.x
-//                Log.e("드래그 다운","${touchPoint}")
+                Log.e("드래그클릭 다운","${touchPoint}")
             }
 
 
@@ -241,15 +268,15 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 // 손가락이 화면에서 떨어졌을때 x좌표와의 거리 비교
                 // 해당 거리가 100이 되지 않으면 리턴.
                 var xx = event.x
-//                Log.e("드래그 업","${xx}, ${Math.abs(touchPoint)}")
+                Log.e("드래그클릭 업","${xx}, ${Math.abs(touchPoint)}")
                 touchPoint = touchPoint - xx
 //                Log.e("드래그 업","${xx}, ${Math.abs(touchPoint)}")
 //                if (Math.abs(touchPoint) < 100) {
 //                    return false
 //                }
-                if (Math.abs(touchPoint) <= 16 ) {
+                if (Math.abs(touchPoint) <= 30 ) {
                     runOnUiThread {
-                        Toast.makeText(this, "${dayText?.year}년 ${dayText?.monthValue}월 ${dayText?.dayOfMonth}일", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "일", Toast.LENGTH_SHORT).show()
                     }
                 } else if (touchPoint > 0) {
                     // 손가락을 우->좌로 움직였을때 오른쪽 화면 생성
@@ -280,26 +307,6 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 touchPoint = event.x
 //                Log.e("드래그 다운","${touchPoint}")
             }
-
-//            MotionEvent.ACTION_MOVE -> {
-//                // 드래그된 위치로 view 위치 변경
-//                var newX = event.rawX + widgetDX
-//                newX = max(0F, newX)
-//                newX = min(xMax.toFloat(), newX)
-//                v.x = newX
-//
-//                var newY = event.rawY + widgetDY
-//                newY = max(0F, newY)
-//                newY = min(yMax.toFloat(), newY)
-//                v.y = newY
-//
-//                true
-//            }
-
-//            MotionEvent. -> {
-//                var xx = event.x
-//                Log.e("드래그 캔슬","${xx}, ${Math.abs(touchPoint)}")
-//            }
 
             DragEvent.ACTION_DROP -> {
                 // 손가락이 화면에서 떨어졌을때 x좌표와의 거리 비교

@@ -6,38 +6,45 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
+
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
         android:orientation="horizontal">
 
-        <!--        <ImageButton-->
-        <!--            android:id="@+id/pre_btn"-->
-        <!--            android:layout_width="0dp"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:layout_weight="1"-->
-        <!--            android:src="@drawable/ic_previous" />-->
+        <ImageView
+            android:id="@+id/pre_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/monthYearText"
+            android:src="@drawable/pre_btn"
+            android:padding="5dp"
+            android:layout_centerVertical="true"/>
 
         <TextView
             android:id="@+id/monthYearText"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_centerHorizontal="true"
             android:text="4월 2021"
             android:textAlignment="center"
-            android:textSize="15dp"
             android:textColor="@android:color/black"
-            />
+            android:textSize="15dp"
+            android:layout_centerVertical="true"/>
 
-        <!--        <ImageButton-->
-        <!--            android:id="@+id/next_btn"-->
-        <!--            android:layout_width="0dp"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:layout_weight="1"-->
-        <!--            android:src="@drawable/ic_next" />-->
-    </LinearLayout>
+
+        <ImageView
+            android:id="@+id/next_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/monthYearText"
+            android:src="@drawable/next_btn"
+            android:layout_centerVertical="true"
+            android:padding="5dp"/>
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -115,7 +122,7 @@
             android:textColor="@android:color/holo_blue_dark"/>
     </LinearLayout>
 
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/containerHeight"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -130,9 +137,9 @@
             android:overScrollMode="never"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
-            android:background="#00000000" />
+            android:background="#00000000"/>
 
-    </LinearLayout>
+    </FrameLayout>
 
 
 

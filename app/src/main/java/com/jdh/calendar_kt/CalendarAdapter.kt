@@ -3,22 +3,32 @@ package com.jdh.calendar_kt
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Build
-import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.annotation.RequiresApi
-import androidx.core.view.setPadding
 import androidx.recyclerview.widget.RecyclerView
 import java.time.LocalDate
 
 class CalendarAdapter(private val dayList: ArrayList<LocalDate?>,
-                      private val onItemListener: OnItemListener):
+                      private val onItemListener: OnItemListener,
+                        private val recyclerView: RecyclerView):
     RecyclerView.Adapter<CalendarAdapter.ItemViewHolder>() {
 
 
-    class ItemViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
-        val dayText: TextView = itemView.findViewById(R.id.dayText)
+    inner class ItemViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         val container: LinearLayout = itemView.findViewById(R.id.container)
+        val dayText: TextView = itemView.findViewById(R.id.dayText)
+        val circleOne: ImageView = itemView.findViewById(R.id.circleOne)
+        val circleTwo: ImageView = itemView.findViewById(R.id.circleTwo)
+        val circleThree: ImageView = itemView.findViewById(R.id.circleThree)
+
+
+        init {
+//            recyclerView.setOnTouchListener { view, motionEvent ->
+//                Log.e("터치_item","진입")
+//                onItemListener.onTouchEvent(view, motionEvent)
+//            }
+        }
     }
 
     //화면 설정
@@ -66,14 +76,23 @@ class CalendarAdapter(private val dayList: ArrayList<LocalDate?>,
         }
 
         //날짜 클릭, 드래그 이벤트(터치 x좌표이동이 별로 없다면 클릭으로 인식)
-//        holder.itemView.setOnClickListener {
-//            //인터페이스를 통해 날짜를 넘겨준다.
+        // todo : recyclerview에 터치 리스너랑 itemview에 클릭리스너 동시에 걸면 터치리스너가 좌밖에 이동을 안한다.
+        holder.container.setOnClickListener {
+            //인터페이스를 통해 날짜를 넘겨준다.
 //            onItemListener.onItemClick(day)
-//        }
+//            Log.e("클릭_item","${day?.dayOfMonth}")
+            if (MainActivity.container != null) MainActivity.container.setBackgroundResource(R.drawable.unselected_background)
+            MainActivity.container = holder.container
+            holder.container.setBackgroundResource(R.drawable.selected_background)
 
-        holder.itemView.setOnTouchListener { view, event ->
-            onItemListener.onTouchEvent(view, event, day)
+            // 원 표시
+//            holder.circleOne.setBackgroundResource(R.drawable.circle_red)
+//            holder.circleOne.visibility = View.VISIBLE
         }
+
+//        holder.container.setOnTouchListener { view, event ->
+//            onItemListener.onTouchEvent(view, event)
+//        }
 
 //        holder.itemView.setOnDragListener { view, dragEvent ->
 //            Log.e("드래그시작","시작")
