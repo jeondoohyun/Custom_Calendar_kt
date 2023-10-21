@@ -1,5 +1,6 @@
 package com.jdh.calendar_kt
 
+import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -11,7 +12,9 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.core.view.WindowCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -72,70 +75,39 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             }
         }
 
-        // containerHeight에 리스너 추가 하면 동작 안함. containerHeight가 recyclerview 아래에 있어서 그런가?
+        // 메뉴 열기
+        binding.menuBtn.setOnClickListener {
+            if (!binding.drawerView.isDrawerOpen(GravityCompat.START)) {
+                binding.drawerView.openDrawer(GravityCompat.START)
+            }
+        }
 
-//        binding.containerHeight.setOnClickListener {
-//            Log.e("클릭_con","진입")
-//        }
 
-//        recyclerView_height = binding.recyclerView.height
-//        recyclerView_height = binding.containerHeight.height
-//        Log.e("높이_1", "${recyclerView_height}")
-
-//        selectedDate = LocalDate.now()
         CalendarUtil.selectedDate = LocalDate.now()
         CalendarUtil.today = LocalDate.now()
-//        setMonthView()
 
 
         // todo  recyclerview 어댑터의 클릭이벤트와 함께 쓸때 Action_down모션 이벤트가 씹힘, 위 아래로 드래그 하면 모션 캔슬 나면서 모션 up이 작동을 못함
         // 일단은 버튼으로 좌우로 움직이도록 하고 나중에 드래그 이동추가 할것.
-
-
         // 액션다운이 반응을 안함
-        // 이거쓰면 왼쪽으로밖에 안감
-//        var touchPoint = 0f
-//        binding.recyclerView.setOnTouchListener(OnTouchListener { v, event ->
-////            val transaction: FragmentTransaction =
-////                getActivity().getSupportFragmentManager().beginTransaction()
-////            val ff: Fragment
-//            Log.e("드래그 다운","${event.action}")
-//            when (event.action) {
-//                MotionEvent.ACTION_DOWN -> {     // 화면을 처음 터치한 x좌표값 저장
-//                    touchPoint = event.x
-////                    Log.e("드래그 다운","${touchPoint}")
-//                }
-//
-//
-//                MotionEvent.ACTION_UP -> {
-//                    // 손가락이 화면에서 떨어졌을때 x좌표와의 거리 비교
-//                    // 해당 거리가 100이 되지 않으면 리턴.
-//                    var xx = event.x
-//                    touchPoint = touchPoint - xx
-////                    Log.e("드래그 업","${xx}, ${Math.abs(touchPoint)}")
-//                    if (Math.abs(touchPoint) < 100) {
-//                        return@OnTouchListener false
-//                    }
-//                    if (touchPoint > 0) {
-//                        // 손가락을 우->좌로 움직였을때 오른쪽 화면 생성
-//                        Toast.makeText(this, "우",Toast.LENGTH_SHORT).show()
-//                        CalendarUtil.selectedDate = CalendarUtil.selectedDate.plusMonths(1)
-//                        setMonthView()
-//                    } else {
-//                        // 손가락을 좌->우로 움직였을때 왼쪽 화면 생성
-//                        Toast.makeText(this, "좌",Toast.LENGTH_SHORT).show()
-//                        CalendarUtil.selectedDate = CalendarUtil.selectedDate.minusMonths(1)
-//                        setMonthView()
-//                    }
-//
-//                    // 손가락을 왼쪽으로 움직였으면 오른쪽 화면이 나타나야 한다.
-////                    transaction.replace(R.id.fragment_container, ff)
-////                    transaction.commit()
-//                }
-//            }
-//            true
-//        })
 
+    }   // onCreate..
+
+    override fun onBackPressed() {
+        if (binding.drawerView.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerView.closeDrawer(GravityCompat.START)
+        } else {
+            // 알러트
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("종료")
+                .setMessage("종료 하시겠습니까?")
+                .setPositiveButton("확인", DialogInterface.OnClickListener { dialogInterface, i ->
+                    finishAffinity()
+                    System.exit(0)
+                })
+                .setNegativeButton("취소", null)
+            builder.show()
+        }
     }
 
 
