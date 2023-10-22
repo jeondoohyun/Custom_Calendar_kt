@@ -168,14 +168,59 @@
             android:background="@color/white"
             android:layout_gravity="start"
             android:paddingTop="15dp"
-            android:paddingLeft="15dp">
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp">
 
-            <ImageView
+            <LinearLayout
                 android:id="@+id/addBtn"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/add"/>
+                android:orientation="horizontal">
 
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/add"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="할일 추가"
+                    android:layout_gravity="center_vertical"/>
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:background="#33000000"/>
+
+<!--            <ImageView-->
+<!--                android:id="@+id/clickCircle"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:background="@drawable/circle_click" />-->
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/circle_sky"
+                    android:layout_gravity="center"/>
+
+
+                <ImageView
+                    android:id="@+id/circleSkyBack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/circle_click"
+                    android:layout_gravity="center" />
+
+            </FrameLayout>
 
 
         </LinearLayout>

@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.DragEvent
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
@@ -82,6 +83,21 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             }
         }
 
+        // 할일 추가
+        binding.addBtn.setOnClickListener {
+            var builder = AlertDialog.Builder(this)
+            var view = LayoutInflater.from(this).inflate(R.layout.custom_alert, null)
+            builder.setView(view)
+            builder.create().show()
+        }
+
+
+        binding.circleSkyBack.setOnClickListener {
+            Log.e("원클릭","${binding.circleSkyBack?.isSelected}")
+            binding.circleSkyBack?.isSelected = binding.circleSkyBack?.isSelected != true
+//            binding.circleSkyBack.isSelected = true
+        }
+
 
         CalendarUtil.selectedDate = LocalDate.now()
         CalendarUtil.today = LocalDate.now()
@@ -90,6 +106,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         // todo  recyclerview 어댑터의 클릭이벤트와 함께 쓸때 Action_down모션 이벤트가 씹힘, 위 아래로 드래그 하면 모션 캔슬 나면서 모션 up이 작동을 못함
         // 일단은 버튼으로 좌우로 움직이도록 하고 나중에 드래그 이동추가 할것.
         // 액션다운이 반응을 안함
+        // 해당일에 원 imageView 동적 추가?
 
     }   // onCreate..
 
