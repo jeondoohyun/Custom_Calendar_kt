@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingTop="5dp">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/circleMain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/circle_sky"
+            android:layout_gravity="center"/>
+
+
+        <ImageView
+            android:id="@+id/circleBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/circle_click"
+            android:layout_gravity="center" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/textviewPlanContent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="할일 내용"
+        android:textColor="@color/black"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="10dp"/>
+
+</LinearLayout>

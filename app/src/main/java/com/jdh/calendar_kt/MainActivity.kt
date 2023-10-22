@@ -1,5 +1,6 @@
 package com.jdh.calendar_kt
 
+import android.content.Context
 import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
@@ -10,7 +11,10 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.WindowManager
+import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -29,6 +33,8 @@ class MainActivity : AppCompatActivity(), OnItemListener {
     companion object {
         var recyclerView_height = 0
         lateinit var container: LinearLayout
+        var planArray = ArrayList<Plan>()
+        var completeArray = ArrayList<Plan>()
     }
 
     private var mBinding: ActivityMainBinding? = null
@@ -83,20 +89,92 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             }
         }
 
-        // 할일 추가
+        // 할일 알러트 생성
         binding.addBtn.setOnClickListener {
+            // 커스텀 알러트
             var builder = AlertDialog.Builder(this)
             var view = LayoutInflater.from(this).inflate(R.layout.custom_alert, null)
+
+            var editText = view.findViewById<EditText>(R.id.editText)
+            var circleRedBack = view.findViewById<ImageView>(R.id.circleRedBack)
+            var circleYellowBack = view.findViewById<ImageView>(R.id.circleYellowBack)
+            var circleSkyBack = view.findViewById<ImageView>(R.id.circleSkyBack)
+            var positiveButton = view.findViewById<TextView>(R.id.positiveButton)
+            var negativeButton = view.findViewById<TextView>(R.id.negativeButton)
+
+            circleRedBack.setOnClickListener {
+                circleRedBack.isSelected = true
+                circleYellowBack.isSelected = false
+                circleSkyBack.isSelected = false
+            }
+
+            circleYellowBack.setOnClickListener {
+                circleYellowBack.isSelected = true
+                circleRedBack.isSelected = false
+                circleSkyBack.isSelected = false
+            }
+
+            circleSkyBack.setOnClickListener {
+                circleSkyBack.isSelected = true
+                circleYellowBack.isSelected = false
+                circleRedBack.isSelected = false
+            }
+
             builder.setView(view)
-            builder.create().show()
+
+            var ad = builder.create()
+
+            positiveButton.setOnClickListener {
+                if (editText.text.isEmpty()) {
+                    Toast.makeText(this, "내용을 입력하세요",Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                if (!circleRedBack.isSelected && !circleYellowBack.isSelected && !circleSkyBack.isSelected) {
+                    Toast.makeText(this, "색상을 선택하세요",Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                var color = 0
+                if (circleRedBack.isSelected) color = 1
+                else if (circleYellowBack.isSelected) color = 2
+                else if (circleSkyBack.isSelected) color = 3
+
+                var removeList = ArrayList<Plan>()
+                planArray.forEach {
+                    if (it.color == color) removeList.add(it)  // 반복문 돌리고 있는중 해당 리스트 요소를 삭제하면 index가 바뀌어 에러 발생. 해당 요소를 받아 놓고 반복문 이후에 삭제 해준다.
+                }
+                planArray.removeAll(removeList)
+                planArray.add(Plan(editText.text.toString(), color, false))
+
+                // recyclerviewPlan adapter 설정 하기
+                val adapter = PlanAdapter(planArray, binding.recyclerviewPlan)
+                binding.recyclerviewPlan.adapter = adapter
+                adapter.notifyDataSetChanged()
+
+                ad.dismiss()
+            }
+
+            negativeButton.setOnClickListener {
+                ad.dismiss()
+            }
+
+            ad.show()
+        }
+
+        // todo
+        binding.completeBtn.setOnClickListener {
+            var builder = AlertDialog.Builder(this)
+            var view = LayoutInflater.from(this).inflate(R.layout.custom_alert, null)
+
         }
 
 
-        binding.circleSkyBack.setOnClickListener {
-            Log.e("원클릭","${binding.circleSkyBack?.isSelected}")
-            binding.circleSkyBack?.isSelected = binding.circleSkyBack?.isSelected != true
-//            binding.circleSkyBack.isSelected = true
-        }
+//        binding.circleSkyBack.setOnClickListener {
+//            Log.e("원클릭","${binding.circleSkyBack?.isSelected}")
+//            binding.circleSkyBack?.isSelected = binding.circleSkyBack?.isSelected != true
+////            binding.circleSkyBack.isSelected = true
+//        }
 
 
         CalendarUtil.selectedDate = LocalDate.now()
@@ -109,6 +187,19 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         // 해당일에 원 imageView 동적 추가?
 
     }   // onCreate..
+
+    fun addPlan(content: String, color: Int) {
+        var inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
+        // root에 바로 안붙이고(null) addView()로 추가 하니까 데이터 그대로 유지되면서 새로운 view 추가 가능
+        var view = inflater.inflate(R.layout.plan_list, null, false)
+        binding.containerMenu.addView(view)
+
+        view.findViewById<TextView>(R.id.textviewPlanContent).text = content
+        if (color == 1)  view.findViewById<ImageView>(R.id.circleBack).setImageResource(R.drawable.circle_red)
+        else if (color == 2)  view.findViewById<ImageView>(R.id.circleBack).setImageResource(R.drawable.circle_yellow)
+        else if (color == 3)  view.findViewById<ImageView>(R.id.circleBack).setImageResource(R.drawable.circle_sky)
+    }
 
     override fun onBackPressed() {
         if (binding.drawerView.isDrawerOpen(GravityCompat.START)) {
@@ -166,16 +257,16 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         val dayList = dayInMonthArray(CalendarUtil.selectedDate)
 
         //어댑터 초기화
-        val adapter = CalendarAdapter(dayList, this, binding.recyclerView)
+        val adapter = CalendarAdapter(dayList, this, binding.recyclerviewCalendar)
 
         //레이아웃 설정(열 7개)
         var manager: RecyclerView.LayoutManager = GridLayoutManager(applicationContext, 7)
 
         //레이아웃 적용
-        binding.recyclerView.layoutManager = manager
+        binding.recyclerviewCalendar.layoutManager = manager
 
         //어댑터 적용
-        binding.recyclerView.adapter = adapter
+        binding.recyclerviewCalendar.adapter = adapter
 //        recyclerView_height = binding.recyclerView.height
 //        Log.e("높이_2", "${recyclerView_height}")
     }
