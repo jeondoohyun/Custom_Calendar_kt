@@ -148,7 +148,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 planArray.add(Plan(editText.text.toString(), color, false))
 
                 // recyclerviewPlan adapter 설정 하기
-                val adapter = PlanAdapter(planArray, binding.recyclerviewPlan)
+                val adapter = AdapterPlan(planArray, binding.recyclerviewPlan)
                 binding.recyclerviewPlan.adapter = adapter
                 adapter.notifyDataSetChanged()
 
@@ -162,10 +162,22 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             ad.show()
         }
 
-        // todo
         binding.completeBtn.setOnClickListener {
             var builder = AlertDialog.Builder(this)
-            var view = LayoutInflater.from(this).inflate(R.layout.custom_alert, null)
+            var view = LayoutInflater.from(this).inflate(R.layout.recyclerview_complete, null)
+
+            var recyclerviewComplete = view.findViewById<RecyclerView>(R.id.recyclerviewComplete)
+            builder.setView(view)
+
+            val adapter = AdapterComplete(planArray, this)
+
+            recyclerviewComplete.adapter = adapter
+            adapter.notifyDataSetChanged()
+
+            var ab = builder.create()
+            ab.show()
+
+
 
         }
 
@@ -254,10 +266,10 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         binding.monthYearText.text = monthYearFromDate(CalendarUtil.selectedDate)
 
         //날짜 생성해서 리스트에 담기
-        val dayList = dayInMonthArray(CalendarUtil.selectedDate)
+        val dayList = dayInMonthArray(CalendarUtil.selectedDate, null)
 
         //어댑터 초기화
-        val adapter = CalendarAdapter(dayList, this, binding.recyclerviewCalendar)
+        val adapter = AdapterCalendar(dayList, this, binding.recyclerviewCalendar)
 
         //레이아웃 설정(열 7개)
         var manager: RecyclerView.LayoutManager = GridLayoutManager(applicationContext, 7)
@@ -283,9 +295,9 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
     //날짜 생성
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun dayInMonthArray(date: LocalDate): ArrayList<LocalDate?>{
+    private fun dayInMonthArray(date: LocalDate, plan: Plan?): ArrayList<DayData?>{
 
-        var dayList = ArrayList<LocalDate?>()
+        var dayList = ArrayList<DayData?>()
 
         var yearMonth = YearMonth.from(date)
 
@@ -307,8 +319,8 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             } else if (i > (lastDay + dayOfWeek)) {
                 break
             } else {  // 날짜 추가
-                dayList.add(LocalDate.of(CalendarUtil.selectedDate.year,
-                    CalendarUtil.selectedDate.monthValue, i - dayOfWeek))
+//                if ()
+                dayList.add(DayData(LocalDate.of(CalendarUtil.selectedDate.year, CalendarUtil.selectedDate.monthValue, i - dayOfWeek), plan))
             }
         }
 
@@ -325,6 +337,10 @@ class MainActivity : AppCompatActivity(), OnItemListener {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onItemClick(dayText: LocalDate?) {
         Toast.makeText(this, "${dayText?.year}년 ${dayText?.monthValue}월 ${dayText?.dayOfMonth}일", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onCheck() {
+
     }
 
     var touchPoint = 0f

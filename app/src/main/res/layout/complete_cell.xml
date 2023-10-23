@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <CheckBox
+        android:id="@+id/checkboxComplete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+
+
+    <FrameLayout
+        android:id="@+id/framelayoutCircle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/checkboxComplete"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/circleMain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/circle_sky"
+            android:layout_gravity="center"/>
+
+
+        <ImageView
+            android:id="@+id/circleBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/circle_click"
+            android:layout_gravity="center" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/textviewPlanContent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="할일 내용"
+        android:textColor="@color/black"
+        android:layout_marginLeft="10dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/framelayoutCircle"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

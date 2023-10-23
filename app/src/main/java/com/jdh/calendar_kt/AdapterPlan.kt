@@ -1,17 +1,15 @@
 package com.jdh.calendar_kt
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.os.Build
 import android.view.*
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
-import java.time.LocalDate
 
-class PlanAdapter(private val planList: ArrayList<Plan>,
-                      private val recyclerView: RecyclerView):
-    RecyclerView.Adapter<PlanAdapter.ItemViewHolder>() {
+class AdapterPlan(private val planList: ArrayList<Plan>,
+                  private val recyclerView: RecyclerView):
+    RecyclerView.Adapter<AdapterPlan.ItemViewHolder>() {
 
 
     inner class ItemViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){

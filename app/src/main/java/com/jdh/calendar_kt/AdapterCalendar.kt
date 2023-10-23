@@ -3,16 +3,17 @@ package com.jdh.calendar_kt
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Build
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import java.time.LocalDate
 
-class CalendarAdapter(private val dayList: ArrayList<LocalDate?>,
+class AdapterCalendar(private val dayList: ArrayList<DayData?>,
                       private val onItemListener: OnItemListener,
-                        private val recyclerView: RecyclerView):
-    RecyclerView.Adapter<CalendarAdapter.ItemViewHolder>() {
+                      private val recyclerView: RecyclerView):
+    RecyclerView.Adapter<AdapterCalendar.ItemViewHolder>() {
 
 
     inner class ItemViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
@@ -65,10 +66,11 @@ class CalendarAdapter(private val dayList: ArrayList<LocalDate?>,
             holder.dayText.text = ""
         }else{
             //해당 일자를 넣는다.
-            holder.dayText.text = day.dayOfMonth.toString()
+            holder.dayText.text = day.localDate.dayOfMonth.toString()
 
             //현재 날짜 색상 칠하기
-            if(day == CalendarUtil.today){
+            Log.e("현재 날짜", "${day.localDate}, ${CalendarUtil.today}")   // 2023-10-31, 2023-10-24
+            if(day.localDate == CalendarUtil.today){
                 holder.dayText.setBackgroundResource(R.drawable.today_background)
                 holder.dayText.setPadding(10,0,10,0)
                 holder.dayText.setTextColor(Color.WHITE)
