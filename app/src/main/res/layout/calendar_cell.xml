@@ -35,19 +35,19 @@
             android:paddingRight="3dp">
 
             <ImageView
-                android:id="@+id/circleOne"
+                android:id="@+id/circle1"
                 android:layout_width="10dp"
                 android:layout_height="10dp"
                 android:visibility="gone"/>
 
             <ImageView
-                android:id="@+id/circleTwo"
+                android:id="@+id/circle2"
                 android:layout_width="10dp"
                 android:layout_height="10dp"
                 android:visibility="gone"/>
 
             <ImageView
-                android:id="@+id/circleThree"
+                android:id="@+id/circle3"
                 android:layout_width="10dp"
                 android:layout_height="10dp"
                 android:visibility="gone"/>

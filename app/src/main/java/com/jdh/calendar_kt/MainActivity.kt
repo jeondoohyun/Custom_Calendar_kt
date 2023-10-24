@@ -16,7 +16,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -33,18 +32,31 @@ class MainActivity : AppCompatActivity(), OnItemListener {
     companion object {
         var recyclerView_height = 0
         lateinit var container: LinearLayout
-        var planArray = ArrayList<Plan>()
-        var completeArray = ArrayList<Plan>()
+        var dataPlanArray = ArrayList<DataPlan>()   // 메뉴에서 추가된 할일
+        var completeArray = ArrayList<DataPlan>()
+        lateinit var dataDay: DataDay
+        lateinit var adapter: AdapterCalendar
     }
 
     private var mBinding: ActivityMainBinding? = null
     private val binding get() = mBinding!!
     lateinit var selectedDate: LocalDate
-    @RequiresApi(Build.VERSION_CODES.O)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            var ad = AlertDialog.Builder(this)
+            ad.setTitle("종료")
+            ad.setMessage("안드로이드 버전이 너무 낮습니다. 앱이 종료됩니다.")
+            ad.setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
+                finishAffinity()
+                System.exit(0)
+            })
+            ad.create().show()
+        }
 
         // 상태바 투명화
         setStatusBarTransparent()
@@ -55,7 +67,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             0,
             navigationHeight()
         )
-
+        dataDay = DataDay()
         container = LinearLayout(this)
 
         binding.containerHeight.getViewTreeObserver()
@@ -68,6 +80,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 }
             })
 
+        // 이전 달 이동
         binding.preBtn.setOnClickListener {
             CalendarUtil.selectedDate = CalendarUtil.selectedDate.minusMonths(1)
             runOnUiThread {
@@ -75,6 +88,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             }
         }
 
+        // 다음 달 이동
         binding.nextBtn.setOnClickListener {
             CalendarUtil.selectedDate = CalendarUtil.selectedDate.plusMonths(1)
             runOnUiThread {
@@ -140,15 +154,15 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 else if (circleYellowBack.isSelected) color = 2
                 else if (circleSkyBack.isSelected) color = 3
 
-                var removeList = ArrayList<Plan>()
-                planArray.forEach {
+                var removeList = ArrayList<DataPlan>()
+                dataPlanArray.forEach {
                     if (it.color == color) removeList.add(it)  // 반복문 돌리고 있는중 해당 리스트 요소를 삭제하면 index가 바뀌어 에러 발생. 해당 요소를 받아 놓고 반복문 이후에 삭제 해준다.
                 }
-                planArray.removeAll(removeList)
-                planArray.add(Plan(editText.text.toString(), color, false))
+                dataPlanArray.removeAll(removeList)
+                dataPlanArray.add(DataPlan(editText.text.toString(), color, false))
 
                 // recyclerviewPlan adapter 설정 하기
-                val adapter = AdapterPlan(planArray, binding.recyclerviewPlan)
+                val adapter = AdapterPlan(dataPlanArray, binding.recyclerviewPlan)
                 binding.recyclerviewPlan.adapter = adapter
                 adapter.notifyDataSetChanged()
 
@@ -158,7 +172,6 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             negativeButton.setOnClickListener {
                 ad.dismiss()
             }
-
             ad.show()
         }
 
@@ -166,19 +179,25 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             var builder = AlertDialog.Builder(this)
             var view = LayoutInflater.from(this).inflate(R.layout.recyclerview_complete, null)
 
+
             var recyclerviewComplete = view.findViewById<RecyclerView>(R.id.recyclerviewComplete)
             builder.setView(view)
 
-            val adapter = AdapterComplete(planArray, this)
+            val adapterComplete = AdapterComplete(dataPlanArray, this)
 
-            recyclerviewComplete.adapter = adapter
-            adapter.notifyDataSetChanged()
+            recyclerviewComplete.adapter = adapterComplete
+            adapterComplete.notifyDataSetChanged()
+
+            builder.setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
+                dialog.dismiss()
+                runOnUiThread {
+                    adapter.setData(dayList)
+                    adapter.notifyDataSetChanged()
+                }
+            })
 
             var ab = builder.create()
             ab.show()
-
-
-
         }
 
 
@@ -197,6 +216,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         // 일단은 버튼으로 좌우로 움직이도록 하고 나중에 드래그 이동추가 할것.
         // 액션다운이 반응을 안함
         // 해당일에 원 imageView 동적 추가?
+        // 할일성공 완료 한뒤에 다시 할일성공 눌렀을때 check 상태 유지되도록
 
     }   // onCreate..
 
@@ -260,16 +280,17 @@ class MainActivity : AppCompatActivity(), OnItemListener {
     }
 
     //날짜 화면에 보여주기
-    @RequiresApi(Build.VERSION_CODES.O)
+
+    var dayList = ArrayList<DataComplete?>()
     private fun setMonthView() {
         //년월 텍스트뷰 셋팅
         binding.monthYearText.text = monthYearFromDate(CalendarUtil.selectedDate)
 
         //날짜 생성해서 리스트에 담기
-        val dayList = dayInMonthArray(CalendarUtil.selectedDate, null)
+        dayList = dayInMonthArray(CalendarUtil.selectedDate, null)
 
         //어댑터 초기화
-        val adapter = AdapterCalendar(dayList, this, binding.recyclerviewCalendar)
+        adapter = AdapterCalendar(dayList, this, binding.recyclerviewCalendar)
 
         //레이아웃 설정(열 7개)
         var manager: RecyclerView.LayoutManager = GridLayoutManager(applicationContext, 7)
@@ -279,26 +300,30 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
         //어댑터 적용
         binding.recyclerviewCalendar.adapter = adapter
+
 //        recyclerView_height = binding.recyclerView.height
 //        Log.e("높이_2", "${recyclerView_height}")
     }
 
     //날짜 타입 설정
-    @RequiresApi(Build.VERSION_CODES.O)
+
     private fun monthYearFromDate(date: LocalDate): String{
 
-        var formatter = DateTimeFormatter.ofPattern("M월 yyyy")
+        var formatter = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            DateTimeFormatter.ofPattern("M월 yyyy")
+        } else {
+            TODO("VERSION.SDK_INT < O")
+        }
 
         // 받아온 날짜를 해당 포맷으로 변경
         return date.format(formatter)
     }
 
     //날짜 생성
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun dayInMonthArray(date: LocalDate, plan: Plan?): ArrayList<DayData?>{
 
-        var dayList = ArrayList<DayData?>()
-
+    private fun dayInMonthArray(date: LocalDate, dataDay: DataDay?): ArrayList<DataComplete?>{
+        // date : 현재 날짜가 포함되어 있는 LocalDate
+        var dayList = ArrayList<DataComplete?>()
         var yearMonth = YearMonth.from(date)
 
         //해당 월 마지막 날짜 가져오기(예: 28, 30, 31)
@@ -313,14 +338,23 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         var idx = 0
         if (dayOfWeek == 7) idx = 8 // 첫시작날이 일요일일때 첫칸부터 채우도록 idx 8 설정
         else idx = 1
+        var a = ArrayList<DataPlan>()
+        a.add(DataPlan("g",1,false))
         for(i in idx..41){
             if(i <= dayOfWeek){
                 dayList.add(null)
             } else if (i > (lastDay + dayOfWeek)) {
                 break
             } else {  // 날짜 추가
-//                if ()
-                dayList.add(DayData(LocalDate.of(CalendarUtil.selectedDate.year, CalendarUtil.selectedDate.monthValue, i - dayOfWeek), plan))
+                // 해당일과 DayData
+                var key = "${CalendarUtil.selectedDate.year}-${CalendarUtil.selectedDate.monthValue}-${i - dayOfWeek}"
+                if (dataDay?.mapDate?.containsKey(key) == true) {
+                    dayList.add(DataComplete(LocalDate.of(CalendarUtil.selectedDate.year, CalendarUtil.selectedDate.monthValue, i - dayOfWeek), dataDay.mapDate[key]))
+                } else {
+                    dayList.add(DataComplete(LocalDate.of(CalendarUtil.selectedDate.year, CalendarUtil.selectedDate.monthValue, i - dayOfWeek), null))
+//                    dayList.add(DataComplete(LocalDate.of(CalendarUtil.selectedDate.year, CalendarUtil.selectedDate.monthValue, i - dayOfWeek), a))
+                }
+                // LocalDate.of() 원하는 날짜의 LocalDate 생성
             }
         }
 
@@ -331,20 +365,46 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             }
         }
 
+        // recyclerview 사용하려면 arrayList필요함
         return dayList
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
     override fun onItemClick(dayText: LocalDate?) {
         Toast.makeText(this, "${dayText?.year}년 ${dayText?.monthValue}월 ${dayText?.dayOfMonth}일", Toast.LENGTH_SHORT).show()
     }
 
-    override fun onCheck() {
+
+    override fun onCheck(isChecked: Boolean, dataPlan: DataPlan) {
+        Log.e("check","${isChecked}, ${dataPlan.color}, ${dataPlan.contentPlan}, ${CalendarUtil.today.toString()}")
+        if (!dataDay.mapDate.containsKey("${CalendarUtil.today.toString()}")) dataDay.mapDate["${CalendarUtil.today.toString()}"] = ArrayList()
+//        dayData.mapDate.set("${CalendarUtil.today.toString()}", )
+
+        if (isChecked) {
+            dataDay.mapDate["${CalendarUtil.today.toString()}"]?.add(dataPlan)
+        } else {
+            dataDay.mapDate["${CalendarUtil.today.toString()}"]?.remove(dataPlan)
+        }
+        // adapter 데이터 변경후 갱신
+        Log.e("오늘","${dataDay.mapDate["2023-10-24"]?.get(0)?.color}")
+
+//        setMonthView()
+//        Log.e("dataday","${dataDay.mapDate.keys.}")
+
+        dayList = dayInMonthArray(CalendarUtil.selectedDate, dataDay)
+//        dayList = null
+
+
+        //어댑터 초기화
+//        runOnUiThread {
+//            adapter = AdapterCalendar(dayList, this, binding.recyclerviewCalendar)
+//            adapter.notifyDataSetChanged()
+//        }
 
     }
 
     var touchPoint = 0f
-    @RequiresApi(Build.VERSION_CODES.O)
+
     override fun onTouchEvent(view: View, event: MotionEvent): Boolean {
 //        var touchPoint = 0f
 
@@ -394,7 +454,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         return true
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
     override fun onDrag(view: View, event: DragEvent, dayText: String): Boolean {
 //        var touchPoint = 0f
         Log.e("드래그","${event.action}")

@@ -10,7 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import java.time.LocalDate
 
-class AdapterCalendar(private val dayList: ArrayList<DayData?>,
+class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
                       private val onItemListener: OnItemListener,
                       private val recyclerView: RecyclerView):
     RecyclerView.Adapter<AdapterCalendar.ItemViewHolder>() {
@@ -19,9 +19,9 @@ class AdapterCalendar(private val dayList: ArrayList<DayData?>,
     inner class ItemViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         val container: LinearLayout = itemView.findViewById(R.id.container)
         val dayText: TextView = itemView.findViewById(R.id.dayText)
-        val circleOne: ImageView = itemView.findViewById(R.id.circleOne)
-        val circleTwo: ImageView = itemView.findViewById(R.id.circleTwo)
-        val circleThree: ImageView = itemView.findViewById(R.id.circleThree)
+        val circle1: ImageView = itemView.findViewById(R.id.circle1)
+        val circle2: ImageView = itemView.findViewById(R.id.circle2)
+        val circle3: ImageView = itemView.findViewById(R.id.circle3)
 
 
         init {
@@ -42,7 +42,6 @@ class AdapterCalendar(private val dayList: ArrayList<DayData?>,
 
     //데이터 설정
     @SuppressLint("ResourceAsColor")
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
 
         var day = dayList[holder.adapterPosition]
@@ -69,11 +68,32 @@ class AdapterCalendar(private val dayList: ArrayList<DayData?>,
             holder.dayText.text = day.localDate.dayOfMonth.toString()
 
             //현재 날짜 색상 칠하기
-            Log.e("현재 날짜", "${day.localDate}, ${CalendarUtil.today}")   // 2023-10-31, 2023-10-24
+//            Log.e("현재 날짜", "${day.toString()}, ${CalendarUtil.today.toString()}")   // 2023-10-31, 2023-10-24
             if(day.localDate == CalendarUtil.today){
                 holder.dayText.setBackgroundResource(R.drawable.today_background)
                 holder.dayText.setPadding(10,0,10,0)
                 holder.dayText.setTextColor(Color.WHITE)
+            }
+        }
+
+        if (day != null) {
+            if (day.arrDataPlan?.isNotEmpty() == true) {
+                Log.e("원","${day.arrDataPlan!!.size}")
+                for (i in 0 until day.arrDataPlan!!.size) {
+                    var imageView = holder.itemView.findViewById<ImageView>(R.id.circle1 + i)
+                    if (day.arrDataPlan!![i].color == 1) {
+                        imageView.visibility = View.VISIBLE
+                        imageView.setImageResource(R.drawable.circle_red)
+                    }
+                    else if (day.arrDataPlan!![i].color == 2) {
+                        imageView.visibility = View.VISIBLE
+                        imageView.setImageResource(R.drawable.circle_yellow)
+                    }
+                    else if (day.arrDataPlan!![i].color == 3) {
+                        imageView.visibility = View.VISIBLE
+                        imageView.setImageResource(R.drawable.circle_sky)
+                    }
+                }
             }
         }
 
@@ -87,9 +107,6 @@ class AdapterCalendar(private val dayList: ArrayList<DayData?>,
             MainActivity.container = holder.container
             holder.container.setBackgroundResource(R.drawable.selected_background)
 
-            // 원 표시
-//            holder.circleOne.setBackgroundResource(R.drawable.circle_red)
-//            holder.circleOne.visibility = View.VISIBLE
         }
 
 //        holder.container.setOnTouchListener { view, event ->
@@ -104,5 +121,9 @@ class AdapterCalendar(private val dayList: ArrayList<DayData?>,
 
     override fun getItemCount(): Int {
         return dayList.size
+    }
+
+    fun setData(dayList: ArrayList<DataComplete?>) {
+        this.dayList = dayList
     }
 }
