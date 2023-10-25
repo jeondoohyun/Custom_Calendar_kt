@@ -30,17 +30,22 @@ import java.time.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity(), OnItemListener {
     companion object {
-        var recyclerView_height = 0
+        var recyclerView_calendar_height = 0
         lateinit var container: LinearLayout
         var dataPlanArray = ArrayList<DataPlan>()   // 메뉴에서 추가된 할일
         var completeArray = ArrayList<DataPlan>()
-        lateinit var dataDay: DataDay
-        lateinit var adapter: AdapterCalendar
+        lateinit var dataDay: DataDay   // 달력에 할일완료 표시에 쓰일 데이터. key 해당날짜, value 할일완료 데이터
+        lateinit var adapterCalendar: AdapterCalendar
+        lateinit var adapterPlan: AdapterPlan
     }
 
     private var mBinding: ActivityMainBinding? = null
     private val binding get() = mBinding!!
     lateinit var selectedDate: LocalDate
+
+    private val PRE_NAME_PLAN = "QWER"
+    private val PRE_KEY_PLAN = "PLAN"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,11 +79,27 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             .addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     val height: Int = binding.containerHeight.getHeight()
-                    recyclerView_height = height
+                    recyclerView_calendar_height = height
                     binding.containerHeight.getViewTreeObserver().removeOnGlobalLayoutListener(this)
                     setMonthView()
                 }
             })
+
+
+        var s = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_PLAN)?.split(",")
+        Log.e("저장소확인_1", "${s}")
+        if (s != null) {
+            for (i in 0 until s.size/3) {
+                dataPlanArray.add(DataPlan(s[i*3],s[i*3+1].toInt(),s[i*3+2].toBoolean()))
+            }
+
+            runOnUiThread {
+                adapterPlan = AdapterPlan(dataPlanArray, binding.recyclerviewPlan)
+                binding.recyclerviewPlan.adapter = adapterPlan
+                adapterPlan.notifyDataSetChanged()
+            }
+        }
+
 
         // 이전 달 이동
         binding.preBtn.setOnClickListener {
@@ -107,7 +128,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         binding.addBtn.setOnClickListener {
             // 커스텀 알러트
             var builder = AlertDialog.Builder(this)
-            var view = LayoutInflater.from(this).inflate(R.layout.custom_alert, null)
+            var view = LayoutInflater.from(this).inflate(R.layout.custom_alert_addplan, null)
 
             var editText = view.findViewById<EditText>(R.id.editText)
             var circleRedBack = view.findViewById<ImageView>(R.id.circleRedBack)
@@ -162,11 +183,22 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 dataPlanArray.add(DataPlan(editText.text.toString(), color, false))
 
                 // recyclerviewPlan adapter 설정 하기
-                val adapter = AdapterPlan(dataPlanArray, binding.recyclerviewPlan)
-                binding.recyclerviewPlan.adapter = adapter
-                adapter.notifyDataSetChanged()
+                adapterPlan = AdapterPlan(dataPlanArray, binding.recyclerviewPlan)
+                binding.recyclerviewPlan.adapter = adapterPlan
+                adapterPlan.notifyDataSetChanged()
+
+                var s = ""
+                dataPlanArray.forEach {
+                    s+="${it.contentPlan},${it.color},${false},"
+                }
+                s = s.substring(0, s.length-1)
+                // key : color, value : 할일내용
+                PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, s)
+
 
                 ad.dismiss()
+
+
             }
 
             negativeButton.setOnClickListener {
@@ -175,29 +207,33 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             ad.show()
         }
 
+        // 할일 성공
         binding.completeBtn.setOnClickListener {
-            var builder = AlertDialog.Builder(this)
-            var view = LayoutInflater.from(this).inflate(R.layout.recyclerview_complete, null)
+            if (dataPlanArray.size == 0) Toast.makeText(this, "메뉴에서 할일을 추가하세요!", Toast.LENGTH_SHORT).show()
+            else {
+                var builder = AlertDialog.Builder(this)
+                var view = LayoutInflater.from(this).inflate(R.layout.recyclerview_complete, null)
 
 
-            var recyclerviewComplete = view.findViewById<RecyclerView>(R.id.recyclerviewComplete)
-            builder.setView(view)
+                var recyclerviewComplete = view.findViewById<RecyclerView>(R.id.recyclerviewComplete)
+                builder.setView(view)
 
-            val adapterComplete = AdapterComplete(dataPlanArray, this)
+                val adapterComplete = AdapterComplete(dataPlanArray, this)
 
-            recyclerviewComplete.adapter = adapterComplete
-            adapterComplete.notifyDataSetChanged()
+                recyclerviewComplete.adapter = adapterComplete
+                adapterComplete.notifyDataSetChanged()
 
-            builder.setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
-                dialog.dismiss()
-                runOnUiThread {
-                    adapter.setData(dayList)
-                    adapter.notifyDataSetChanged()
-                }
-            })
+                builder.setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
+                    dialog.dismiss()
+                    runOnUiThread {
+                        adapterCalendar.setData(dayList)
+                        adapterCalendar.notifyDataSetChanged()
+                    }
+                })
 
-            var ab = builder.create()
-            ab.show()
+                var ab = builder.create()
+                ab.show()
+            }
         }
 
 
@@ -215,8 +251,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         // todo  recyclerview 어댑터의 클릭이벤트와 함께 쓸때 Action_down모션 이벤트가 씹힘, 위 아래로 드래그 하면 모션 캔슬 나면서 모션 up이 작동을 못함
         // 일단은 버튼으로 좌우로 움직이도록 하고 나중에 드래그 이동추가 할것.
         // 액션다운이 반응을 안함
-        // 해당일에 원 imageView 동적 추가?
-        // 할일성공 완료 한뒤에 다시 할일성공 눌렀을때 check 상태 유지되도록
+        // 내부저장소에 저장할 데이터 : 메뉴 할일표시, 할일성공
 
     }   // onCreate..
 
@@ -290,7 +325,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         dayList = dayInMonthArray(CalendarUtil.selectedDate, null)
 
         //어댑터 초기화
-        adapter = AdapterCalendar(dayList, this, binding.recyclerviewCalendar)
+        adapterCalendar = AdapterCalendar(dayList, this, binding.recyclerviewCalendar)
 
         //레이아웃 설정(열 7개)
         var manager: RecyclerView.LayoutManager = GridLayoutManager(applicationContext, 7)
@@ -299,7 +334,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         binding.recyclerviewCalendar.layoutManager = manager
 
         //어댑터 적용
-        binding.recyclerviewCalendar.adapter = adapter
+        binding.recyclerviewCalendar.adapter = adapterCalendar
 
 //        recyclerView_height = binding.recyclerView.height
 //        Log.e("높이_2", "${recyclerView_height}")
@@ -346,13 +381,12 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             } else if (i > (lastDay + dayOfWeek)) {
                 break
             } else {  // 날짜 추가
-                // 해당일과 DayData
+                // 해당일과 dataDay key확인해서 동일하면 데이터 추가
                 var key = "${CalendarUtil.selectedDate.year}-${CalendarUtil.selectedDate.monthValue}-${i - dayOfWeek}"
                 if (dataDay?.mapDate?.containsKey(key) == true) {
                     dayList.add(DataComplete(LocalDate.of(CalendarUtil.selectedDate.year, CalendarUtil.selectedDate.monthValue, i - dayOfWeek), dataDay.mapDate[key]))
                 } else {
                     dayList.add(DataComplete(LocalDate.of(CalendarUtil.selectedDate.year, CalendarUtil.selectedDate.monthValue, i - dayOfWeek), null))
-//                    dayList.add(DataComplete(LocalDate.of(CalendarUtil.selectedDate.year, CalendarUtil.selectedDate.monthValue, i - dayOfWeek), a))
                 }
                 // LocalDate.of() 원하는 날짜의 LocalDate 생성
             }
@@ -381,26 +415,13 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 //        dayData.mapDate.set("${CalendarUtil.today.toString()}", )
 
         if (isChecked) {
+            dataPlan.success = true
             dataDay.mapDate["${CalendarUtil.today.toString()}"]?.add(dataPlan)
         } else {
+            dataPlan.success = false
             dataDay.mapDate["${CalendarUtil.today.toString()}"]?.remove(dataPlan)
         }
-        // adapter 데이터 변경후 갱신
-        Log.e("오늘","${dataDay.mapDate["2023-10-24"]?.get(0)?.color}")
-
-//        setMonthView()
-//        Log.e("dataday","${dataDay.mapDate.keys.}")
-
         dayList = dayInMonthArray(CalendarUtil.selectedDate, dataDay)
-//        dayList = null
-
-
-        //어댑터 초기화
-//        runOnUiThread {
-//            adapter = AdapterCalendar(dayList, this, binding.recyclerviewCalendar)
-//            adapter.notifyDataSetChanged()
-//        }
-
     }
 
     var touchPoint = 0f

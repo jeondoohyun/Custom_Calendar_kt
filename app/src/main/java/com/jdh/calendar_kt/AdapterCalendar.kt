@@ -2,13 +2,10 @@ package com.jdh.calendar_kt
 
 import android.annotation.SuppressLint
 import android.graphics.Color
-import android.os.Build
 import android.util.Log
 import android.view.*
 import android.widget.*
-import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
-import java.time.LocalDate
 
 class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
                       private val onItemListener: OnItemListener,
@@ -47,9 +44,9 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
         var day = dayList[holder.adapterPosition]
 
         if (dayList.size <= 35) {
-            holder.container.layoutParams.height = MainActivity.recyclerView_height/5
+            holder.container.layoutParams.height = MainActivity.recyclerView_calendar_height/5
         } else {    // > 35
-            holder.container.layoutParams.height = MainActivity.recyclerView_height/6
+            holder.container.layoutParams.height = MainActivity.recyclerView_calendar_height/6
         }
 
 
