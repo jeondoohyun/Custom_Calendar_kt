@@ -41,6 +41,7 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
 
         var day = dayList[holder.adapterPosition]
+        Log.e("달력데이터","${day?.localDate?.dayOfMonth.toString()}")
 
         if (dayList.size <= 35) {
             holder.container.layoutParams.height = MainActivity.recyclerView_calendar_height/5

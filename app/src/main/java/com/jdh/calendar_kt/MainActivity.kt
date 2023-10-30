@@ -395,6 +395,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
         //어댑터 적용
         binding.recyclerviewCalendar.adapter = adapterCalendar
+        adapterCalendar.notifyDataSetChanged()
 
 //        recyclerView_height = binding.recyclerView.height
 //        Log.e("높이_2", "${recyclerView_height}")
