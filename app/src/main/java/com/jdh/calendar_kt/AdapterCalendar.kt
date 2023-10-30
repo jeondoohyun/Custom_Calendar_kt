@@ -23,7 +23,6 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
 
         init {
 //            recyclerView.setOnTouchListener { view, motionEvent ->
-//                Log.e("터치_item","진입")
 //                onItemListener.onTouchEvent(view, motionEvent)
 //            }
         }
@@ -77,18 +76,20 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
             if (day.arrDataPlan?.isNotEmpty() == true) {
                 Log.e("원","${day.arrDataPlan!!.size}")
                 for (i in 0 until day.arrDataPlan!!.size) {
-                    var imageView = holder.itemView.findViewById<ImageView>(R.id.circle1 + i)
-                    if (day.arrDataPlan!![i].color == 1) {
-                        imageView.visibility = View.VISIBLE
-                        imageView.setImageResource(R.drawable.circle_red)
-                    }
-                    else if (day.arrDataPlan!![i].color == 2) {
-                        imageView.visibility = View.VISIBLE
-                        imageView.setImageResource(R.drawable.circle_yellow)
-                    }
-                    else if (day.arrDataPlan!![i].color == 3) {
-                        imageView.visibility = View.VISIBLE
-                        imageView.setImageResource(R.drawable.circle_sky)
+                    if (day.arrDataPlan!![i].success) {
+                        var imageView = holder.itemView.findViewById<ImageView>(R.id.circle1 + i)
+                        if (day.arrDataPlan!![i].color == 1) {
+                            imageView?.visibility = View.VISIBLE
+                            imageView?.setImageResource(R.drawable.circle_red)
+                        }
+                        else if (day.arrDataPlan!![i].color == 2) {
+                            imageView?.visibility = View.VISIBLE
+                            imageView?.setImageResource(R.drawable.circle_yellow)
+                        }
+                        else if (day.arrDataPlan!![i].color == 3) {
+                            imageView?.visibility = View.VISIBLE
+                            imageView?.setImageResource(R.drawable.circle_sky)
+                        }
                     }
                 }
             }

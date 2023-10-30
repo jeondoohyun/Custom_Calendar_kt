@@ -42,10 +42,13 @@ class AdapterComplete (private val dataPlanList: ArrayList<DataPlan>,
 
         holder.textviewPlanContent.text = plan.contentPlan
 
-        if (plan.success) holder.checkboxComplete.isChecked = true
+        holder.checkboxComplete.isChecked = plan.success
+
+//        if (plan.success) {
+//            onItemListener.onCheck(true, plan)
+//        }
 
         holder.checkboxComplete.setOnCheckedChangeListener { buttonView, isChecked ->
-//            Log.e("check", "${isChecked}, ${plan.contentPlan}")
             onItemListener.onCheck(isChecked, plan)
         }
 

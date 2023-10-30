@@ -45,6 +45,9 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
     private val PRE_NAME_PLAN = "QWER"
     private val PRE_KEY_PLAN = "PLAN"
+    private val PRE_KEY_CALENDAR = "CAL"
+
+    lateinit var dataPlan: DataPlan
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,6 +78,11 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         dataDay = DataDay()
         container = LinearLayout(this)
 
+        var s = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_PLAN)?.split(",")
+        stringToPlanArray(s)
+        var s1 = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR)?.split(",_")
+        stringToCalendarArray(s1)
+
         binding.containerHeight.getViewTreeObserver()
             .addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
@@ -84,22 +92,6 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                     setMonthView()
                 }
             })
-
-
-        var s = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_PLAN)?.split(",")
-        Log.e("저장소확인_1", "${s}")
-        if (s != null) {
-            for (i in 0 until s.size/3) {
-                dataPlanArray.add(DataPlan(s[i*3],s[i*3+1].toInt(),s[i*3+2].toBoolean()))
-            }
-
-            runOnUiThread {
-                adapterPlan = AdapterPlan(dataPlanArray, binding.recyclerviewPlan)
-                binding.recyclerviewPlan.adapter = adapterPlan
-                adapterPlan.notifyDataSetChanged()
-            }
-        }
-
 
         // 이전 달 이동
         binding.preBtn.setOnClickListener {
@@ -195,10 +187,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 // key : color, value : 할일내용
                 PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, s)
 
-
                 ad.dismiss()
-
-
             }
 
             negativeButton.setOnClickListener {
@@ -229,7 +218,14 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                         adapterCalendar.setData(dayList)
                         adapterCalendar.notifyDataSetChanged()
                     }
+
+                    // 2개 저장하기
+
+                    PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, planArrayToString(dayList))
+                    PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR, calendarArrayToString(dataDay))
                 })
+
+                builder.setNegativeButton("취소", DialogInterface.OnClickListener { dialog, which ->  dialog.dismiss()})
 
                 var ab = builder.create()
                 ab.show()
@@ -252,8 +248,72 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         // 일단은 버튼으로 좌우로 움직이도록 하고 나중에 드래그 이동추가 할것.
         // 액션다운이 반응을 안함
         // 내부저장소에 저장할 데이터 : 메뉴 할일표시, 할일성공
+        // 체크 해놓고 종료후 다시 켯을때 할일성공과 달력에 잘 표시되지만 할일성공의 체크를 풀어도 달력의 표시가 해제가 안된다
+        // 체크했다가 해제 하면 에러 뜸
+        // 내부저장소에 ,_로 저장됨
 
     }   // onCreate..
+
+    fun planArrayToString(dataPlanArray: ArrayList<DataComplete?>): String {
+        // 여기가 에러
+        var s1 = ""
+        if (dataPlanArray.size > 0) {
+            dataPlanArray.forEach {
+                it?.arrDataPlan?.forEach {
+                    s1+="${it.contentPlan},${it.color},${it.success},"
+                }
+            }
+            s1 = s1.substring(0, s1.length-1)
+        }
+
+        return s1
+    }
+
+    fun stringToPlanArray(s: List<String>?) {
+        if (s != null) {
+            for (i in 0 until s.size/3) {
+                dataPlanArray.add(DataPlan(s[i*3],s[i*3+1].toInt(),s[i*3+2].toBoolean()))
+            }
+
+            runOnUiThread {
+                adapterPlan = AdapterPlan(dataPlanArray, binding.recyclerviewPlan)
+                binding.recyclerviewPlan.adapter = adapterPlan
+                adapterPlan.notifyDataSetChanged()
+            }
+        }
+    }
+
+    fun calendarArrayToString(dataDay: DataDay): String {
+        var s1 = ""
+        if (dataDay.mapDate.size > 0) {
+            dataDay.mapDate.forEach {
+                var key = it.key
+                s1 += "${key},"
+                Log.e("첵첵","$s1")
+                it.value?.forEach {
+                    s1 += "${it.contentPlan},${it.color},${it.success},"
+                }
+                s1 += "_"
+                Log.e("첵첵1","$s1")
+            }
+            s1 = s1.substring(0, s1.length-2)
+        }
+        return s1
+    }
+
+    fun stringToCalendarArray(s1: List<String>?) {
+        if (s1 != null) {
+            for (i in 0 until s1.size) {
+                var s2 = s1[i].split(",")
+                if (dataDay.mapDate.containsKey("${s2[0]}")) dataDay.mapDate.remove(s2[0])
+                dataDay.mapDate[s2[0]] = ArrayList()
+                for (j in 0 until s2.size/3) {
+                    dataDay.mapDate[s2[0]]?.add(DataPlan(s2[j*3+1], s2[j*3+2].toInt(), s2[j*3+3].toBoolean()))
+                }
+            }
+        }
+
+    }
 
     fun addPlan(content: String, color: Int) {
         var inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -322,7 +382,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         binding.monthYearText.text = monthYearFromDate(CalendarUtil.selectedDate)
 
         //날짜 생성해서 리스트에 담기
-        dayList = dayInMonthArray(CalendarUtil.selectedDate, null)
+        dayList = dayInMonthArray(CalendarUtil.selectedDate, dataDay)
 
         //어댑터 초기화
         adapterCalendar = AdapterCalendar(dayList, this, binding.recyclerviewCalendar)
@@ -384,6 +444,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 // 해당일과 dataDay key확인해서 동일하면 데이터 추가
                 var key = "${CalendarUtil.selectedDate.year}-${CalendarUtil.selectedDate.monthValue}-${i - dayOfWeek}"
                 if (dataDay?.mapDate?.containsKey(key) == true) {
+                    Log.e("체크체크_4","${dataDay.mapDate[key]?.size}")
                     dayList.add(DataComplete(LocalDate.of(CalendarUtil.selectedDate.year, CalendarUtil.selectedDate.monthValue, i - dayOfWeek), dataDay.mapDate[key]))
                 } else {
                     dayList.add(DataComplete(LocalDate.of(CalendarUtil.selectedDate.year, CalendarUtil.selectedDate.monthValue, i - dayOfWeek), null))
@@ -414,6 +475,8 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         if (!dataDay.mapDate.containsKey("${CalendarUtil.today.toString()}")) dataDay.mapDate["${CalendarUtil.today.toString()}"] = ArrayList()
 //        dayData.mapDate.set("${CalendarUtil.today.toString()}", )
 
+        // sharedPreference에 저장 데이터 저장
+
         if (isChecked) {
             dataPlan.success = true
             dataDay.mapDate["${CalendarUtil.today.toString()}"]?.add(dataPlan)
@@ -421,6 +484,10 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             dataPlan.success = false
             dataDay.mapDate["${CalendarUtil.today.toString()}"]?.remove(dataPlan)
         }
+        dataPlanArray.forEach {
+            if (it.color == dataPlan.color) it.success = dataPlan.success
+        }
+//        this.dataPlan = DataPlan(dataPlan.contentPlan, dataPlan.color, dataPlan.success)
         dayList = dayInMonthArray(CalendarUtil.selectedDate, dataDay)
     }
 
@@ -433,11 +500,9 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         //1 up
         //2 move
         //3 cancel
-        Log.e("드래그","${event.action}")
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {     // 화면을 처음 터치한 x좌표값 저장
                 touchPoint = event.x
-                Log.e("드래그클릭 다운","${touchPoint}")
             }
 
 
@@ -445,7 +510,6 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 // 손가락이 화면에서 떨어졌을때 x좌표와의 거리 비교
                 // 해당 거리가 100이 되지 않으면 리턴.
                 var xx = event.x
-                Log.e("드래그클릭 업","${xx}, ${Math.abs(touchPoint)}")
                 touchPoint = touchPoint - xx
 //                Log.e("드래그 업","${xx}, ${Math.abs(touchPoint)}")
 //                if (Math.abs(touchPoint) < 100) {
