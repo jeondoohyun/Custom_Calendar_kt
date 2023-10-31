@@ -51,6 +51,8 @@ class MainActivity : AppCompatActivity(), OnItemListener {
     private val PRE_KEY_PLAN = "PLAN"
     private val PRE_KEY_CALENDAR = "CAL"
 
+    private var sharedDataCal = ""
+
     lateinit var dataPlan: DataPlan
 
 
@@ -73,7 +75,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         // 상태바 투명화
         setStatusBarTransparent()
 
-        binding.activityCustomCalendar.setPadding(
+        binding.rootLinearLayout.setPadding(
             0,
             statusBarHeight(),
             0,
@@ -84,8 +86,15 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
         var s = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_PLAN)?.split(",")
         s?.let { stringToPlanArray(it) }
-        var s1 = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR)?.split("_")
+//        var s1 = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR)?.split("_")
+        sharedDataCal = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR).toString()
+        var s1 = sharedDataCal.split("_")
         s1?.let { stringToCalendarArray(it) }
+
+        binding.monthYearText.setOnClickListener {
+            // 하드 코딩으로 내부저장소에 저장
+            PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR, "2023-10-31,1_2023-10-2_2023-10-3,1,2_2023-10-4,1_2023-10-5,1,2")
+        }
 
         binding.containerHeight.getViewTreeObserver()
             .addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
@@ -192,13 +201,13 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 binding.recyclerviewPlan.adapter = adapterPlan
                 adapterPlan.notifyDataSetChanged()
 
-                var s = ""
-                dataPlanArray.forEach {
-                    s+="${it.contentPlan},${it.color},${false},"
-                }
-                s = s.substring(0, s.length-1)
+//                var s = ""
+//                dataPlanArray.forEach {
+//                    s+="${it.contentPlan},${it.color},${false},"
+//                }
+//                s = s.substring(0, s.length-1)
 
-                PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, s)
+                PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, planArrayToString(dataPlanArray))
 
                 ad.dismiss()
             }
@@ -332,7 +341,6 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             for (i in 0 until s1.size) {
                 if (s1[i].isNotEmpty()) {
                     var s2 = s1[i].split(",")
-
                     if (dataDay.mapDate.containsKey("${s2[0]}")) dataDay.mapDate.remove(s2[0])  // todo : 삭제 잘 되는지 테스트프로젝트에서 확인해볼것
                     dataDay.mapDate[s2[0]] = ArrayList()
                     for (j in 1 until s2.size) {

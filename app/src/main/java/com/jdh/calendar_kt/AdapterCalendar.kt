@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 
 class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
@@ -78,15 +79,15 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
                 Log.e("원","${day.color!!.size}")
                 for (i in 0 until day.color!!.size) {
                     var imageView = holder.itemView.findViewById<ImageView>(R.id.circle1 + i)
-                    if (day.color!![i] == 1) {
+                    if (imageView.isVisible) {
+                        continue
+                    } else if (day.color!![i] == 1) {
                         imageView?.visibility = View.VISIBLE
                         imageView?.setImageResource(R.drawable.circle_red)
-                    }
-                    else if (day.color!![i] == 2) {
+                    } else if (day.color!![i] == 2) {
                         imageView?.visibility = View.VISIBLE
                         imageView?.setImageResource(R.drawable.circle_yellow)
-                    }
-                    else if (day.color!![i] == 3) {
+                    } else if (day.color!![i] == 3) {
                         imageView?.visibility = View.VISIBLE
                         imageView?.setImageResource(R.drawable.circle_sky)
                     }
