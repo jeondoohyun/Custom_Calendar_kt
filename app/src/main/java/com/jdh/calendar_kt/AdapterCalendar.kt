@@ -65,8 +65,8 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
             holder.dayText.text = day.localDate.dayOfMonth.toString()
 
             //현재 날짜 색상 칠하기
-//            Log.e("현재 날짜", "${day.toString()}, ${CalendarUtil.today.toString()}")   // 2023-10-31, 2023-10-24
             if(day.localDate == CalendarUtil.today){
+                Log.e("현재 날짜", "${day.localDate.toString()}, ${CalendarUtil.today.toString()}")   // 2023-10-31, 2023-10-24
                 holder.dayText.setBackgroundResource(R.drawable.today_background)
                 holder.dayText.setPadding(10,0,10,0)
                 holder.dayText.setTextColor(Color.WHITE)
@@ -74,23 +74,21 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
         }
 
         if (day != null) {
-            if (day.arrDataPlan?.isNotEmpty() == true) {
-                Log.e("원","${day.arrDataPlan!!.size}")
-                for (i in 0 until day.arrDataPlan!!.size) {
-                    if (day.arrDataPlan!![i].success) {
-                        var imageView = holder.itemView.findViewById<ImageView>(R.id.circle1 + i)
-                        if (day.arrDataPlan!![i].color == 1) {
-                            imageView?.visibility = View.VISIBLE
-                            imageView?.setImageResource(R.drawable.circle_red)
-                        }
-                        else if (day.arrDataPlan!![i].color == 2) {
-                            imageView?.visibility = View.VISIBLE
-                            imageView?.setImageResource(R.drawable.circle_yellow)
-                        }
-                        else if (day.arrDataPlan!![i].color == 3) {
-                            imageView?.visibility = View.VISIBLE
-                            imageView?.setImageResource(R.drawable.circle_sky)
-                        }
+            if (day.color?.isNotEmpty() == true) {
+                Log.e("원","${day.color!!.size}")
+                for (i in 0 until day.color!!.size) {
+                    var imageView = holder.itemView.findViewById<ImageView>(R.id.circle1 + i)
+                    if (day.color!![i] == 1) {
+                        imageView?.visibility = View.VISIBLE
+                        imageView?.setImageResource(R.drawable.circle_red)
+                    }
+                    else if (day.color!![i] == 2) {
+                        imageView?.visibility = View.VISIBLE
+                        imageView?.setImageResource(R.drawable.circle_yellow)
+                    }
+                    else if (day.color!![i] == 3) {
+                        imageView?.visibility = View.VISIBLE
+                        imageView?.setImageResource(R.drawable.circle_sky)
                     }
                 }
             }

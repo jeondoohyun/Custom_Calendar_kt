@@ -1,3 +1,6 @@
+
+
+
 package com.jdh.calendar_kt
 
 import android.content.Context
@@ -26,6 +29,7 @@ import com.jdh.calendar_kt.databinding.ActivityMainBinding
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.util.Arrays
 
 
 class MainActivity : AppCompatActivity(), OnItemListener {
@@ -79,9 +83,9 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         container = LinearLayout(this)
 
         var s = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_PLAN)?.split(",")
-        stringToPlanArray(s)
-        var s1 = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR)?.split(",_")
-        stringToCalendarArray(s1)
+        s?.let { stringToPlanArray(it) }
+        var s1 = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR)?.split("_")
+        s1?.let { stringToCalendarArray(it) }
 
         binding.containerHeight.getViewTreeObserver()
             .addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
@@ -90,6 +94,15 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                     recyclerView_calendar_height = height
                     binding.containerHeight.getViewTreeObserver().removeOnGlobalLayoutListener(this)
                     setMonthView()
+                }
+            })
+
+        binding.recyclerviewCalendar.getViewTreeObserver()
+            .addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    binding.recyclerviewCalendar.getViewTreeObserver().removeOnGlobalLayoutListener(this)
+                    binding.progressbarByRecyclerview.visibility = View.INVISIBLE
+                    binding.recyclerviewCalendar.visibility = View.VISIBLE
                 }
             })
 
@@ -184,7 +197,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                     s+="${it.contentPlan},${it.color},${false},"
                 }
                 s = s.substring(0, s.length-1)
-                // key : color, value : 할일내용
+
                 PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, s)
 
                 ad.dismiss()
@@ -203,7 +216,6 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 var builder = AlertDialog.Builder(this)
                 var view = LayoutInflater.from(this).inflate(R.layout.recyclerview_complete, null)
 
-
                 var recyclerviewComplete = view.findViewById<RecyclerView>(R.id.recyclerviewComplete)
                 builder.setView(view)
 
@@ -213,16 +225,16 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 adapterComplete.notifyDataSetChanged()
 
                 builder.setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
-                    dialog.dismiss()
                     runOnUiThread {
                         adapterCalendar.setData(dayList)
                         adapterCalendar.notifyDataSetChanged()
                     }
 
                     // 2개 저장하기
-
-                    PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, planArrayToString(dayList))
+                    PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, planArrayToString(dataPlanArray))
                     PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR, calendarArrayToString(dataDay))
+
+                    dialog.dismiss()
                 })
 
                 builder.setNegativeButton("취소", DialogInterface.OnClickListener { dialog, which ->  dialog.dismiss()})
@@ -244,33 +256,43 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         CalendarUtil.today = LocalDate.now()
 
 
-        // todo  recyclerview 어댑터의 클릭이벤트와 함께 쓸때 Action_down모션 이벤트가 씹힘, 위 아래로 드래그 하면 모션 캔슬 나면서 모션 up이 작동을 못함
-        // 일단은 버튼으로 좌우로 움직이도록 하고 나중에 드래그 이동추가 할것.
-        // 액션다운이 반응을 안함
-        // 내부저장소에 저장할 데이터 : 메뉴 할일표시, 할일성공
-        // 체크 해놓고 종료후 다시 켯을때 할일성공과 달력에 잘 표시되지만 할일성공의 체크를 풀어도 달력의 표시가 해제가 안된다
-        // 체크했다가 해제 하면 에러 뜸
-        // 내부저장소에 ,_로 저장됨
+
 
     }   // onCreate..
 
-    fun planArrayToString(dataPlanArray: ArrayList<DataComplete?>): String {
+//    fun planArrayToString(dataPlanArray: ArrayList<DataComplete?>): String {
+//        // 여기가 에러
+//        var s1 = ""
+//        if (dataPlanArray.size > 0) {
+//            dataPlanArray.forEach {
+//                Log.e("ss","${it?.arrDataPlan?.size}")
+//                if (it?.arrDataPlan != null) {
+//                    it?.arrDataPlan?.forEach {
+//                        s1+="${it.contentPlan},${it.color},${it.success},"
+//                        Log.e("ss","${s1}")
+//                    }
+//                    s1 = s1.substring(0, s1.length-1)
+//                }
+//            }
+//        }
+//
+//        return s1
+//    }
+
+    fun planArrayToString(dataPlanArray: ArrayList<DataPlan>): String {
         // 여기가 에러
         var s1 = ""
         if (dataPlanArray.size > 0) {
             dataPlanArray.forEach {
-                it?.arrDataPlan?.forEach {
-                    s1+="${it.contentPlan},${it.color},${it.success},"
-                }
+                s1+="${it!!.contentPlan},${it.color},${it.success},"
             }
             s1 = s1.substring(0, s1.length-1)
         }
-
         return s1
     }
 
-    fun stringToPlanArray(s: List<String>?) {
-        if (s != null) {
+    fun stringToPlanArray(s: List<String>) {
+        if (s.isNotEmpty()) {
             for (i in 0 until s.size/3) {
                 dataPlanArray.add(DataPlan(s[i*3],s[i*3+1].toInt(),s[i*3+2].toBoolean()))
             }
@@ -285,34 +307,41 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
     fun calendarArrayToString(dataDay: DataDay): String {
         var s1 = ""
-        if (dataDay.mapDate.size > 0) {
-            dataDay.mapDate.forEach {
-                var key = it.key
+        dataDay.mapDate.forEach {
+            var key = it.key
+            if (key.isNotEmpty()) {
                 s1 += "${key},"
                 Log.e("첵첵","$s1")
                 it.value?.forEach {
-                    s1 += "${it.contentPlan},${it.color},${it.success},"
+                    s1 += "${it},"
                 }
+                s1 = s1.substring(0, s1.length-1)
                 s1 += "_"
                 Log.e("첵첵1","$s1")
             }
-            s1 = s1.substring(0, s1.length-2)
+            return s1.substring(0, s1.length-1)
         }
         return s1
     }
 
-    fun stringToCalendarArray(s1: List<String>?) {
-        if (s1 != null) {
+    fun stringToCalendarArray(s1: List<String>) {
+        s1.forEach {
+            Log.e("eee","${it}, ${it.isNotEmpty()}, ${s1.isNotEmpty()}")
+        }
+        if (s1.isNotEmpty()) {
             for (i in 0 until s1.size) {
-                var s2 = s1[i].split(",")
-                if (dataDay.mapDate.containsKey("${s2[0]}")) dataDay.mapDate.remove(s2[0])
-                dataDay.mapDate[s2[0]] = ArrayList()
-                for (j in 0 until s2.size/3) {
-                    dataDay.mapDate[s2[0]]?.add(DataPlan(s2[j*3+1], s2[j*3+2].toInt(), s2[j*3+3].toBoolean()))
+                if (s1[i].isNotEmpty()) {
+                    var s2 = s1[i].split(",")
+
+                    if (dataDay.mapDate.containsKey("${s2[0]}")) dataDay.mapDate.remove(s2[0])  // todo : 삭제 잘 되는지 테스트프로젝트에서 확인해볼것
+                    dataDay.mapDate[s2[0]] = ArrayList()
+                    for (j in 1 until s2.size) {
+                        dataDay.mapDate[s2[0]]?.add(s2[j].toInt())
+                    }
                 }
+
             }
         }
-
     }
 
     fun addPlan(content: String, color: Int) {
@@ -395,7 +424,6 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
         //어댑터 적용
         binding.recyclerviewCalendar.adapter = adapterCalendar
-        adapterCalendar.notifyDataSetChanged()
 
 //        recyclerView_height = binding.recyclerView.height
 //        Log.e("높이_2", "${recyclerView_height}")
@@ -422,7 +450,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         var dayList = ArrayList<DataComplete?>()
         var yearMonth = YearMonth.from(date)
 
-        //해당 월 마지막 날짜 가져오기(예: 28, 30, 31)
+        //해당 월 마지막 날짜 가져오기(예: 28, 30, 31)Log.e("현재 날짜", "${day.localDate.toString()}, ${CalendarUtil.today.toString()}")   // 2023-10-31, 2023-10-24
         var lastDay = yearMonth.lengthOfMonth()
 
         //해당 월의 첫 번째 날 가져오기(예: 4월 1일)
@@ -477,13 +505,12 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 //        dayData.mapDate.set("${CalendarUtil.today.toString()}", )
 
         // sharedPreference에 저장 데이터 저장
-
         if (isChecked) {
             dataPlan.success = true
-            dataDay.mapDate["${CalendarUtil.today.toString()}"]?.add(dataPlan)
+            dataDay.mapDate["${CalendarUtil.today.toString()}"]?.add(dataPlan.color)
         } else {
             dataPlan.success = false
-            dataDay.mapDate["${CalendarUtil.today.toString()}"]?.remove(dataPlan)
+            dataDay.mapDate["${CalendarUtil.today.toString()}"]?.remove(dataPlan.color)
         }
         dataPlanArray.forEach {
             if (it.color == dataPlan.color) it.success = dataPlan.success
