@@ -42,7 +42,7 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
 
         var day = dayList[holder.adapterPosition]
-        Log.e("달력데이터","${day?.localDate?.dayOfMonth.toString()}")
+        Log.e("달력데이터","${day?.localDate?.dayOfMonth.toString()}, ${day?.color}")
 
         if (dayList.size <= 35) {
             holder.container.layoutParams.height = MainActivity.recyclerView_calendar_height/5
@@ -67,7 +67,7 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
 
             //현재 날짜 색상 칠하기
             if(day.localDate == CalendarUtil.today){
-                Log.e("현재 날짜", "${day.localDate.toString()}, ${CalendarUtil.today.toString()}")   // 2023-10-31, 2023-10-24
+//                Log.e("현재 날짜", "${day.localDate.toString()}, ${CalendarUtil.today.toString()}")   // 2023-10-31, 2023-10-24
                 holder.dayText.setBackgroundResource(R.drawable.today_background)
                 holder.dayText.setPadding(10,0,10,0)
                 holder.dayText.setTextColor(Color.WHITE)

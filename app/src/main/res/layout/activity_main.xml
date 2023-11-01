@@ -31,7 +31,8 @@
                     android:src="@drawable/menu"
                     android:layout_alignParentLeft="true"
                     android:layout_marginLeft="10dp"
-                    android:layout_centerVertical="true"/>
+                    android:layout_centerVertical="true"
+                    android:padding="5dp"/>
 
                 <ImageView
                     android:id="@+id/pre_btn"
@@ -40,7 +41,8 @@
                     android:layout_toLeftOf="@id/monthYearText"
                     android:src="@drawable/pre_btn"
                     android:padding="5dp"
-                    android:layout_centerVertical="true"/>
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/btn_effect"/>
 
                 <TextView
                     android:id="@+id/monthYearText"
@@ -51,7 +53,8 @@
                     android:textAlignment="center"
                     android:textColor="@android:color/black"
                     android:textSize="15dp"
-                    android:layout_centerVertical="true"/>
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/btn_effect"/>
 
 
                 <ImageView
@@ -61,7 +64,8 @@
                     android:layout_toRightOf="@id/monthYearText"
                     android:src="@drawable/next_btn"
                     android:layout_centerVertical="true"
-                    android:padding="5dp"/>
+                    android:padding="5dp"
+                    android:background="@drawable/btn_effect"/>
 
                 <TextView
                     android:id="@+id/completeBtn"
@@ -72,7 +76,8 @@
                     android:textSize="13dp"
                     android:layout_alignParentRight="true"
                     android:layout_marginRight="10dp"
-                    android:padding="5dp"/>
+                    android:padding="5dp"
+                    android:background="@drawable/btn_effect"/>
             </RelativeLayout>
 
             <LinearLayout
@@ -207,7 +212,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="할일 추가"
-                    android:layout_gravity="center_vertical"/>
+                    android:layout_gravity="center_vertical"
+                    android:background="@drawable/btn_effect"/>
 
             </LinearLayout>
 

@@ -53,7 +53,11 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
     private var sharedDataCal = ""
 
-    lateinit var dataPlan: DataPlan
+//    lateinit var dataPlan: DataPlan
+    var dayList = ArrayList<DataComplete?>()
+
+    var tmpDataPlan: DataPlan = DataPlan()
+    var tmpDayList: ArrayList<DataComplete?> = ArrayList<DataComplete?>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -218,7 +222,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             ad.show()
         }
 
-        // 할일 성공
+        // plan complete
         binding.completeBtn.setOnClickListener {
             if (dataPlanArray.size == 0) Toast.makeText(this, "메뉴에서 할일을 추가하세요!", Toast.LENGTH_SHORT).show()
             else {
@@ -234,14 +238,39 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 adapterComplete.notifyDataSetChanged()
 
                 builder.setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
+
+                    var today = "${CalendarUtil.today.year}-${CalendarUtil.today.monthValue}-${CalendarUtil.today.dayOfMonth}"
+                    Log.e("체크체크_2","$today")
+                    if (!dataDay.mapDate.containsKey(today)) dataDay.mapDate[today] = ArrayList()
+
+                    if (tmpDataPlan.success) {
+                        dataDay.mapDate[today]?.add(tmpDataPlan.color)
+                    } else {
+                        dataDay.mapDate[today]?.remove(tmpDataPlan.color)
+                    }
+
+                    dataPlanArray.forEach {
+                        if (it.color == tmpDataPlan.color) it.success = tmpDataPlan.success
+                    }
+
+                    dayList = dayInMonthArray(CalendarUtil.selectedDate, dataDay)
+
+//                    dayList = tmpDayList
+
                     runOnUiThread {
                         adapterCalendar.setData(dayList)
                         adapterCalendar.notifyDataSetChanged()
                     }
 
+
                     // 2개 저장하기
+
+                    dataDay.mapDate.forEach {
+                        Log.e("체크체크_l", "${it.key}, ${it.value}")
+                    }
                     PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, planArrayToString(dataPlanArray))
                     PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR, calendarArrayToString(dataDay))
+
 
                     dialog.dismiss()
                 })
@@ -317,19 +346,26 @@ class MainActivity : AppCompatActivity(), OnItemListener {
     fun calendarArrayToString(dataDay: DataDay): String {
         var s1 = ""
         dataDay.mapDate.forEach {
+            Log.e("체크체크_d", "${it.key}, ${it.value}")
+        }
+        dataDay.mapDate.forEach {
             var key = it.key
-            if (key.isNotEmpty()) {
+            Log.e("체크체크_c","${key}")
+            if (it.value?.isNotEmpty() == true) {
                 s1 += "${key},"
-                Log.e("첵첵","$s1")
                 it.value?.forEach {
                     s1 += "${it},"
                 }
+                Log.e("체크체크_b","${s1}")
                 s1 = s1.substring(0, s1.length-1)
                 s1 += "_"
-                Log.e("첵첵1","$s1")
             }
-            return s1.substring(0, s1.length-1)
+
+//            s1 = s1.substring(0, s1.length-1)
+            Log.e("체크체크_성공", "${s1}")
         }
+        if (s1.isNotEmpty()) s1 = s1.substring(0, s1.length-1)
+        Log.e("체크체크_실패", "${s1}")
         return s1
     }
 
@@ -347,7 +383,9 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                         dataDay.mapDate[s2[0]]?.add(s2[j].toInt())
                     }
                 }
-
+            }
+            dataDay.mapDate.forEach {
+                Log.e("데이터로드", "${it.key}, ${it.value}")
             }
         }
     }
@@ -413,7 +451,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
     //날짜 화면에 보여주기
 
-    var dayList = ArrayList<DataComplete?>()
+
     private fun setMonthView() {
         //년월 텍스트뷰 셋팅
         binding.monthYearText.text = monthYearFromDate(CalendarUtil.selectedDate)
@@ -462,7 +500,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         var lastDay = yearMonth.lengthOfMonth()
 
         //해당 월의 첫 번째 날 가져오기(예: 4월 1일)
-        var firstDay = CalendarUtil.selectedDate.withDayOfMonth(1)
+        var firstDay = date.withDayOfMonth(1)
 
         //첫 번째날 요일 가져오기(월:1, 일: 7)
         var dayOfWeek = firstDay.dayOfWeek.value
@@ -470,8 +508,12 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         var idx = 0
         if (dayOfWeek == 7) idx = 8 // 첫시작날이 일요일일때 첫칸부터 채우도록 idx 8 설정
         else idx = 1
-        var a = ArrayList<DataPlan>()
-        a.add(DataPlan("g",1,false))
+//        var a = ArrayList<DataPlan>()
+//        a.add(DataPlan("g",1,false))
+
+        dataDay?.mapDate?.forEach {
+            Log.e("체크체크_3", "${it.key}")
+        }
         for(i in idx..41){
             if(i <= dayOfWeek){
                 dayList.add(null)
@@ -479,12 +521,12 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 break
             } else {  // 날짜 추가
                 // 해당일과 dataDay key확인해서 동일하면 데이터 추가
-                var key = "${CalendarUtil.selectedDate.year}-${CalendarUtil.selectedDate.monthValue}-${i - dayOfWeek}"
+                date.year
+                var key = "${date.year}-${date.monthValue}-${i - dayOfWeek}"
                 if (dataDay?.mapDate?.containsKey(key) == true) {
-                    Log.e("체크체크_4","${dataDay.mapDate[key]?.size}")
-                    dayList.add(DataComplete(LocalDate.of(CalendarUtil.selectedDate.year, CalendarUtil.selectedDate.monthValue, i - dayOfWeek), dataDay.mapDate[key]))
+                    dayList.add(DataComplete(LocalDate.of(date.year, date.monthValue, i - dayOfWeek), dataDay.mapDate[key]))
                 } else {
-                    dayList.add(DataComplete(LocalDate.of(CalendarUtil.selectedDate.year, CalendarUtil.selectedDate.monthValue, i - dayOfWeek), null))
+                    dayList.add(DataComplete(LocalDate.of(date.year, date.monthValue, i - dayOfWeek), null))
                 }
                 // LocalDate.of() 원하는 날짜의 LocalDate 생성
             }
@@ -507,24 +549,48 @@ class MainActivity : AppCompatActivity(), OnItemListener {
     }
 
 
+
     override fun onCheck(isChecked: Boolean, dataPlan: DataPlan) {
         Log.e("check","${isChecked}, ${dataPlan.color}, ${dataPlan.contentPlan}, ${CalendarUtil.today.toString()}")
-        if (!dataDay.mapDate.containsKey("${CalendarUtil.today.toString()}")) dataDay.mapDate["${CalendarUtil.today.toString()}"] = ArrayList()
+//        if (!dataDay.mapDate.containsKey("${CalendarUtil.today.toString()}")) dataDay.mapDate["${CalendarUtil.today.toString()}"] = ArrayList()
 //        dayData.mapDate.set("${CalendarUtil.today.toString()}", )
 
         // sharedPreference에 저장 데이터 저장
+        // 확인 버튼 누를시
         if (isChecked) {
-            dataPlan.success = true
-            dataDay.mapDate["${CalendarUtil.today.toString()}"]?.add(dataPlan.color)
+//            dataPlan.success = true
+//            dataDay.mapDate["${CalendarUtil.today.toString()}"]?.add(dataPlan.color)
         } else {
-            dataPlan.success = false
-            dataDay.mapDate["${CalendarUtil.today.toString()}"]?.remove(dataPlan.color)
+//            dataPlan.success = false
+//            dataDay.mapDate["${CalendarUtil.today.toString()}"]?.remove(dataPlan.color)
         }
+
+        tmpDataPlan.success = isChecked
+        tmpDataPlan.color = dataPlan.color
+
+
+        dataDay.mapDate.forEach {
+            Log.e("mapDate","${it.key}, ${it.value}")
+        }
+
+//        dataPlanArray.forEach {
+//            Log.e("dataPlanArray","${it.contentPlan}, ${it.color}, ${it.success}")
+//        }
+
+        // 확인 버튼 누를시
         dataPlanArray.forEach {
             if (it.color == dataPlan.color) it.success = dataPlan.success
         }
+
+//        dataPlanArray.forEach {
+//            Log.e("dataPlanArray","${it.contentPlan}, ${it.color}, ${it.success}")
+//        }
+
 //        this.dataPlan = DataPlan(dataPlan.contentPlan, dataPlan.color, dataPlan.success)
-        dayList = dayInMonthArray(CalendarUtil.selectedDate, dataDay)
+
+        // 확인 버튼 누를시
+//        dayList = dayInMonthArray(CalendarUtil.selectedDate, dataDay)
+//        tmpDayList = dayInMonthArray(CalendarUtil.selectedDate, dataDay)
     }
 
     var touchPoint = 0f
