@@ -233,7 +233,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
                     var today = "${CalendarUtil.today.year}-${CalendarUtil.today.monthValue}-${CalendarUtil.today.dayOfMonth}"
                     Log.e("체크체크_2","$today")
-                    if (!dataDay.mapDate.containsKey(today)) dataDay.mapDate[today] = ArrayList()
+                    if (!dataDay.mapDate.containsKey(today)) dataDay.mapDate[today] = HashSet<Int>()
 
                     if (tmpDataPlan.success) {
                         dataDay.mapDate[today]?.add(tmpDataPlan.color)
@@ -365,7 +365,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 if (s1[i].isNotEmpty()) {
                     var s2 = s1[i].split(",")
                     if (dataDay.mapDate.containsKey("${s2[0]}")) dataDay.mapDate.remove(s2[0])  // todo : 삭제 잘 되는지 테스트프로젝트에서 확인해볼것
-                    dataDay.mapDate[s2[0]] = ArrayList()
+                    dataDay.mapDate[s2[0]] = HashSet()
                     for (j in 1 until s2.size) {
                         dataDay.mapDate[s2[0]]?.add(s2[j].toInt())
                     }
@@ -531,45 +531,15 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
     override fun onCheck(isChecked: Boolean, dataPlan: DataPlan) {
         Log.e("check","${isChecked}, ${dataPlan.color}, ${dataPlan.contentPlan}, ${CalendarUtil.today.toString()}")
-//        if (!dataDay.mapDate.containsKey("${CalendarUtil.today.toString()}")) dataDay.mapDate["${CalendarUtil.today.toString()}"] = ArrayList()
-//        dayData.mapDate.set("${CalendarUtil.today.toString()}", )
-
-        // sharedPreference에 저장 데이터 저장
-        // 확인 버튼 누를시
-        if (isChecked) {
-//            dataPlan.success = true
-//            dataDay.mapDate["${CalendarUtil.today.toString()}"]?.add(dataPlan.color)
-        } else {
-//            dataPlan.success = false
-//            dataDay.mapDate["${CalendarUtil.today.toString()}"]?.remove(dataPlan.color)
-        }
 
         tmpDataPlan.success = isChecked
         tmpDataPlan.color = dataPlan.color
 
-
-        dataDay.mapDate.forEach {
-            Log.e("mapDate","${it.key}, ${it.value}")
-        }
-
+        // 확인 버튼 누를시
 //        dataPlanArray.forEach {
-//            Log.e("dataPlanArray","${it.contentPlan}, ${it.color}, ${it.success}")
+//            if (it.color == dataPlan.color) it.success = dataPlan.success
 //        }
 
-        // 확인 버튼 누를시
-        dataPlanArray.forEach {
-            if (it.color == dataPlan.color) it.success = dataPlan.success
-        }
-
-//        dataPlanArray.forEach {
-//            Log.e("dataPlanArray","${it.contentPlan}, ${it.color}, ${it.success}")
-//        }
-
-//        this.dataPlan = DataPlan(dataPlan.contentPlan, dataPlan.color, dataPlan.success)
-
-        // 확인 버튼 누를시
-//        dayList = dayInMonthArray(CalendarUtil.selectedDate, dataDay)
-//        tmpDayList = dayInMonthArray(CalendarUtil.selectedDate, dataDay)
     }
 
     var touchPoint = 0f

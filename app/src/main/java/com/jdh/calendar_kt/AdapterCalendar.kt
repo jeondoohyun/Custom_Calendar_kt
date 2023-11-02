@@ -77,17 +77,19 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
         if (day != null) {
             if (day.color?.isNotEmpty() == true) {
                 Log.e("원","${day.color!!.size}")
-                for (i in 0 until day.color!!.size) {
-                    var imageView = holder.itemView.findViewById<ImageView>(R.id.circle1 + i)
+                var cnt = 0
+
+                day.color!!.forEach {
+                    var imageView = holder.itemView.findViewById<ImageView>(R.id.circle1 + (cnt++))
                     if (imageView.isVisible) {
-                        continue
-                    } else if (day.color!![i] == 1) {
+                        return@forEach  // continue
+                    } else if (it == 1) {
                         imageView?.visibility = View.VISIBLE
                         imageView?.setImageResource(R.drawable.circle_red)
-                    } else if (day.color!![i] == 2) {
+                    } else if (it == 2) {
                         imageView?.visibility = View.VISIBLE
                         imageView?.setImageResource(R.drawable.circle_yellow)
-                    } else if (day.color!![i] == 3) {
+                    } else if (it == 3) {
                         imageView?.visibility = View.VISIBLE
                         imageView?.setImageResource(R.drawable.circle_sky)
                     }
