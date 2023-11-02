@@ -5,7 +5,7 @@ import android.view.*
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 
-class AdapterPlan(private val dataPlanList: ArrayList<DataPlan>,
+class AdapterPlan(private var dataPlanList: ArrayList<DataPlan>,
                   private val recyclerView: RecyclerView):
     RecyclerView.Adapter<AdapterPlan.ItemViewHolder>() {
 
@@ -41,5 +41,9 @@ class AdapterPlan(private val dataPlanList: ArrayList<DataPlan>,
 
     override fun getItemCount(): Int {
         return dataPlanList.size
+    }
+
+    fun setData(dataPlanList: ArrayList<DataPlan>) {
+        this.dataPlanList = dataPlanList
     }
 }

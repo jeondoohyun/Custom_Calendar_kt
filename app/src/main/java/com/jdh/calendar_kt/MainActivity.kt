@@ -51,8 +51,6 @@ class MainActivity : AppCompatActivity(), OnItemListener {
     private val PRE_KEY_PLAN = "PLAN"
     private val PRE_KEY_CALENDAR = "CAL"
 
-    private var sharedDataCal = ""
-
 //    lateinit var dataPlan: DataPlan
     var dayList = ArrayList<DataComplete?>()
 
@@ -90,14 +88,12 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
         var s = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_PLAN)?.split(",")
         s?.let { stringToPlanArray(it) }
-//        var s1 = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR)?.split("_")
-        sharedDataCal = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR).toString()
-        var s1 = sharedDataCal.split("_")
+        var s1 = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR).toString().split("_")
         s1?.let { stringToCalendarArray(it) }
 
         binding.monthYearText.setOnClickListener {
             // 하드 코딩으로 내부저장소에 저장
-            PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR, "2023-10-31,1_2023-10-2_2023-10-3,1,2_2023-10-4,1_2023-10-5,1,2")
+            PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR, "2023-10-31,1_2023-10-2_2023-10-3,1,2_2023-10-4,1_2023-10-5,1,2_2023-11-1,1")
         }
 
         binding.containerHeight.getViewTreeObserver()
@@ -201,15 +197,11 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 dataPlanArray.add(DataPlan(editText.text.toString(), color, false))
 
                 // recyclerviewPlan adapter 설정 하기
-                adapterPlan = AdapterPlan(dataPlanArray, binding.recyclerviewPlan)
-                binding.recyclerviewPlan.adapter = adapterPlan
-                adapterPlan.notifyDataSetChanged()
+//                adapterPlan = AdapterPlan(dataPlanArray, binding.recyclerviewPlan)
+//                binding.recyclerviewPlan.adapter = adapterPlan
 
-//                var s = ""
-//                dataPlanArray.forEach {
-//                    s+="${it.contentPlan},${it.color},${false},"
-//                }
-//                s = s.substring(0, s.length-1)
+                adapterPlan.setData(dataPlanArray)
+                adapterPlan.notifyDataSetChanged()
 
                 PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, planArrayToString(dataPlanArray))
 
@@ -264,13 +256,8 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 
 
                     // 2개 저장하기
-
-                    dataDay.mapDate.forEach {
-                        Log.e("체크체크_l", "${it.key}, ${it.value}")
-                    }
                     PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, planArrayToString(dataPlanArray))
                     PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR, calendarArrayToString(dataDay))
-
 
                     dialog.dismiss()
                 })
@@ -508,27 +495,20 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         var idx = 0
         if (dayOfWeek == 7) idx = 8 // 첫시작날이 일요일일때 첫칸부터 채우도록 idx 8 설정
         else idx = 1
-//        var a = ArrayList<DataPlan>()
-//        a.add(DataPlan("g",1,false))
 
-        dataDay?.mapDate?.forEach {
-            Log.e("체크체크_3", "${it.key}")
-        }
         for(i in idx..41){
-            if(i <= dayOfWeek){
+            if(i <= dayOfWeek){ // i가 시작 요일 보다 작을때, 빈칸 채움
                 dayList.add(null)
-            } else if (i > (lastDay + dayOfWeek)) {
+            } else if (i > (lastDay + dayOfWeek)) { // 마지막날 넘어갈때
                 break
             } else {  // 날짜 추가
                 // 해당일과 dataDay key확인해서 동일하면 데이터 추가
-                date.year
                 var key = "${date.year}-${date.monthValue}-${i - dayOfWeek}"
                 if (dataDay?.mapDate?.containsKey(key) == true) {
                     dayList.add(DataComplete(LocalDate.of(date.year, date.monthValue, i - dayOfWeek), dataDay.mapDate[key]))
                 } else {
                     dayList.add(DataComplete(LocalDate.of(date.year, date.monthValue, i - dayOfWeek), null))
                 }
-                // LocalDate.of() 원하는 날짜의 LocalDate 생성
             }
         }
 
@@ -539,7 +519,6 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             }
         }
 
-        // recyclerview 사용하려면 arrayList필요함
         return dayList
     }
 
