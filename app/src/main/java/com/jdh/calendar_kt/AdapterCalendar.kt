@@ -52,10 +52,9 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
 
 
         //텍스트 색상 지정(토,일)
-        if((position +1) % 7 == 0){ //토요일은 파랑
+        if ((position +1) % 7 == 0){ //토요일은 파랑
             holder.dayText.setTextColor(Color.BLUE)
-
-        }else if( position == 0 || position % 7 == 0){ //일요일은 빨강
+        } else if (position == 0 || position % 7 == 0){ //일요일은 빨강
             holder.dayText.setTextColor(Color.RED)
         }
 
@@ -67,7 +66,6 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
 
             //현재 날짜 색상 칠하기
             if(day.localDate == CalendarUtil.today){
-//                Log.e("현재 날짜", "${day.localDate.toString()}, ${CalendarUtil.today.toString()}")   // 2023-10-31, 2023-10-24
                 holder.dayText.setBackgroundResource(R.drawable.today_background)
                 holder.dayText.setPadding(10,0,10,0)
                 holder.dayText.setTextColor(Color.WHITE)
@@ -78,7 +76,6 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
             if (day.color?.isNotEmpty() == true) {
                 Log.e("원","${day.color!!.size}")
                 var cnt = 0
-
                 day.color!!.forEach {
                     var imageView = holder.itemView.findViewById<ImageView>(R.id.circle1 + (cnt++))
                     if (imageView.isVisible) {
@@ -94,6 +91,7 @@ class AdapterCalendar(private var dayList: ArrayList<DataComplete?>,
                         imageView?.setImageResource(R.drawable.circle_sky)
                     }
                 }
+                cnt = 0
             }
         }
 
