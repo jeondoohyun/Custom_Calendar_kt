@@ -50,12 +50,12 @@ class MainActivity : AppCompatActivity(), OnItemListener {
     private val PRE_NAME_PLAN = "QWER"
     private val PRE_KEY_PLAN = "PLAN"
     private val PRE_KEY_CALENDAR = "CAL"
+    private val PRE_KEY_DATE = "DATE"
 
 //    lateinit var dataPlan: DataPlan
     var dayList = ArrayList<DataComplete?>()
 
     var tmpDataPlan: DataPlan = DataPlan()
-    var tmpDayList: ArrayList<DataComplete?> = ArrayList<DataComplete?>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,6 +74,10 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             ad.create().show()
         }
 
+        CalendarUtil.selectedDate = LocalDate.now()
+        CalendarUtil.today = LocalDate.now()
+
+//        Log.e("날짜","${CalendarUtil.today.toString()}")
         // 상태바 투명화
         setStatusBarTransparent()
 
@@ -91,9 +95,19 @@ class MainActivity : AppCompatActivity(), OnItemListener {
         var s1 = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR).toString().split("_")
         s1?.let { stringToCalendarArray(it) }
 
+        var dateLoad = PreferenceManager().getString(this, PRE_NAME_PLAN, PRE_KEY_DATE)
+        if (dateLoad != CalendarUtil.today.toString()) {
+            dataPlanArray.forEach {
+                it.success = false
+            }
+            PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, planArrayToString(dataPlanArray))
+            PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_DATE, CalendarUtil.today.toString())
+        }
+
         binding.monthYearText.setOnClickListener {
             // 하드 코딩으로 내부저장소에 저장
-            PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR, "2023-10-31,1_2023-10-2_2023-10-3,1,2_2023-10-4,1_2023-10-5,1,2_2023-10-6,1_2023-10-7,1,2_2023-10-8,1,2_2023-10-9,1_2023-10-11,1,2_2023-10-12,1_2023-10-13,1_2023-10-14,1,2_2023-10-15,1_2023-10-16,1,2_2023-10-17,1,2_2023-10-18,1,2_2023-10-19,1,2_2023-10-20,1,2_2023-10-21,1,2_2023-10-22,1,2_2023-10-23,1,2_2023-10-24,1,2_2023-10-25,1,2_2023-10-26,1,2_2023-10-27,1,2_2023-10-28,1,2_2023-10-29,1,2_2023-10-31,1,2")
+//            PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR, "2023-10-31,1_2023-10-2_2023-10-3,1,2_2023-10-4,1_2023-10-5,1,2_2023-10-6,1_2023-10-7,1,2_2023-10-8,1,2_2023-10-9,1_2023-10-11,1,2_2023-10-12,1_2023-10-13,1_2023-10-14,1,2_2023-10-15,1_2023-10-16,1,2_2023-10-17,1,2_2023-10-18,1,2_2023-10-19,1,2_2023-10-20,1,2_2023-10-21,1,2_2023-10-22,1,2_2023-10-23,1,2_2023-10-24,1,2_2023-10-25,1,2_2023-10-26,1,2_2023-10-27,1,2_2023-10-28,1,2_2023-10-29,1,2_2023-10-31,1,2")
+//            PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_DATE, "2023-11-02")
         }
 
         binding.containerHeight.getViewTreeObserver()
@@ -232,7 +246,6 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                 builder.setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
 
                     var today = "${CalendarUtil.today.year}-${CalendarUtil.today.monthValue}-${CalendarUtil.today.dayOfMonth}"
-                    Log.e("체크체크_2","$today")
                     if (!dataDay.mapDate.containsKey(today)) dataDay.mapDate[today] = HashSet<Int>()
 
                     if (tmpDataPlan.success) {
@@ -259,6 +272,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                     PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_PLAN, planArrayToString(dataPlanArray))
                     PreferenceManager().setString(this, PRE_NAME_PLAN, PRE_KEY_CALENDAR, calendarArrayToString(dataDay))
 
+
                     dialog.dismiss()
                 })
 
@@ -277,8 +291,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
 //        }
 
 
-        CalendarUtil.selectedDate = LocalDate.now()
-        CalendarUtil.today = LocalDate.now()
+
 
 
 
@@ -357,9 +370,6 @@ class MainActivity : AppCompatActivity(), OnItemListener {
     }
 
     fun stringToCalendarArray(s1: List<String>) {
-        s1.forEach {
-            Log.e("eee","${it}, ${it.isNotEmpty()}, ${s1.isNotEmpty()}")
-        }
         if (s1.isNotEmpty()) {
             for (i in 0 until s1.size) {
                 if (s1[i].isNotEmpty()) {
@@ -370,9 +380,6 @@ class MainActivity : AppCompatActivity(), OnItemListener {
                         dataDay.mapDate[s2[0]]?.add(s2[j].toInt())
                     }
                 }
-            }
-            dataDay.mapDate.forEach {
-                Log.e("데이터로드", "${it.key}, ${it.value}")
             }
         }
     }
