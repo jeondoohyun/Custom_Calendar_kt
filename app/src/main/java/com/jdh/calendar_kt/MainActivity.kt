@@ -346,26 +346,18 @@ class MainActivity : AppCompatActivity(), OnItemListener {
     fun calendarArrayToString(dataDay: DataDay): String {
         var s1 = ""
         dataDay.mapDate.forEach {
-            Log.e("체크체크_d", "${it.key}, ${it.value}")
-        }
-        dataDay.mapDate.forEach {
             var key = it.key
-            Log.e("체크체크_c","${key}")
             if (it.value?.isNotEmpty() == true) {
                 s1 += "${key},"
                 it.value?.forEach {
                     s1 += "${it},"
                 }
-                Log.e("체크체크_b","${s1}")
                 s1 = s1.substring(0, s1.length-1)
                 s1 += "_"
             }
 
-//            s1 = s1.substring(0, s1.length-1)
-            Log.e("체크체크_성공", "${s1}")
         }
         if (s1.isNotEmpty()) s1 = s1.substring(0, s1.length-1)
-        Log.e("체크체크_실패", "${s1}")
         return s1
     }
 
@@ -374,7 +366,7 @@ class MainActivity : AppCompatActivity(), OnItemListener {
             for (i in 0 until s1.size) {
                 if (s1[i].isNotEmpty()) {
                     var s2 = s1[i].split(",")
-                    if (dataDay.mapDate.containsKey("${s2[0]}")) dataDay.mapDate.remove(s2[0])  // todo : 삭제 잘 되는지 테스트프로젝트에서 확인해볼것
+                    if (dataDay.mapDate.containsKey("${s2[0]}")) dataDay.mapDate.remove(s2[0])
                     dataDay.mapDate[s2[0]] = HashSet()
                     for (j in 1 until s2.size) {
                         dataDay.mapDate[s2[0]]?.add(s2[j].toInt())
